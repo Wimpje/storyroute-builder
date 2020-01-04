@@ -1,0 +1,89 @@
+{
+  "en": {
+    "search": {
+      "location": "search for location"
+    },
+    "validation": {
+      "someDateRequired": "Needs a date",
+      "someTextRequired": "Needs some text"
+    },
+    "marker": {
+      "description": "Description - {length}",
+      "title": "Title - {length}",
+      "current": "Current location: {current}",
+      "addEdit": "Add/edit location",
+      "select": "Select a location",
+      "searchHint": "Click on the map to add a new marker or search:",
+      "delete": "delete",
+      "changeLocation": "change location",
+      "save": "save",
+      "cancel": "cancel",
+      "convertTextToVoice": "Convert description to (google) voice"
+    },
+    "poi": {
+      "title": "Title",
+      "description": "Description",
+      "date": "Date",
+      "tags": "Tags",
+      "tagsHint": "Fill in tags",
+      "filesOther": "Other files (documents)",
+      "filesAudio": "Audio files",
+      "filesVideo": "Video files",
+      "filesImage": "Image files"
+    },
+    "user": {
+      "login": "Log in"
+    },
+    "title": {
+      "loggedIn": "StoryRoute builder - Logged in as {user}",
+      "loggedOut": "StoryRoute builder - Niet ingelogd"
+    },
+    "welcome": "Welcome"
+  },
+  "nl": {
+    "search": {
+      "location": "zoeken een locatie"
+    },
+    "validation": {
+      "someDateRequired": "Datum nodig",
+      "someTextRequired": "Tekst nodig",
+      "atLeastChars": "Tenminste 3 karakters"
+    },
+    "marker": {
+      "description": "Beschrijving - {length}",
+      "title": "Titel - {length}",
+      "current": "Punt: {current}",
+      "addEdit": "Locatie toevoegen/bewerken",
+      "select": "Selecteer een locatie",
+      "searchHint": "Klik op de kaart, of zoek om een nieuwe locatie te maken:",
+      "delete": "verwijder",
+      "changeLocation": "verplaats",
+      "save": "opslaan",
+      "cancel": "annuleren",
+      "convertTextToVoice": "Converteer beschrijving naar Google Voice bestand"
+    },
+    "routes": {
+      "selectRoute": "Selecteer een route"
+    },
+    "poi": {
+      "title": "Titel",
+      "description": "Beschrijving",
+      "date": "Datum",
+      "tags": "Tags",
+      "tagsHint": "Fill in tags",
+      "filesOther": "Overige bestanden (documenten)",
+      "filesAudio": "Audio bestanden",
+      "filesVideo": "Video bestanden",
+      "filesImage": "Afbeeldingen"
+    },
+    "user": {
+      "login": "Log in",
+      "loggedInAs": "Ingelogd als {user}"
+    },
+    "title": {
+      "loggedIn": "StoryRoute builder - Ingelogd als {user}",
+      "loggedOut": "StoryRoute builder - Niet ingelogd"
+    },
+    "welcome": "Welkom"
+  }
+}
