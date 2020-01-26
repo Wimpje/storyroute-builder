@@ -13,9 +13,17 @@
 
         <v-btn
           icon
+          color="warning" 
           @click="deleteConfirmDialog = true"
         >
           <v-icon>mdi-delete</v-icon>
+        </v-btn>
+        
+        <v-btn
+          icon
+          @click="shouldDisplay = false"
+        >
+          <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
       <v-form
@@ -127,16 +135,33 @@
               prepend-icon="mdi-volume-high"
               @change.native="updatePoi($event);"
             />
-            <v-file-input
-              id="otherFiles"
-              :label="$t('poi.filesOther')"
-              :value="currentPoi.otherFiles"
-              :multiple="true"
-              accept="audio/*"
-              filled
-              prepend-icon="mdi-file-multiple"
-              @change.native="updatePoi($event);"
-            />
+            <!--<file-input :files.sync="currentPoi.otherFiles" />-->
+            <v-card
+              v-for="(otherFile, index) in currentPoi.otherFiles"
+              :key="index"
+            >
+              <v-card-title
+                class="headline"
+              >
+                <v-card-title>
+                  {{ otherFile.type }}
+                </v-card-title>
+                <v-card-subtitle>
+                  <v-file-input
+            
+                    :id="'otherfile'+index"
+               
+                    :label="$t('poi.filesOther')"
+                    :value="otherFile.file"
+                    :multiple="true"
+                    accept="audio/*"
+                    filled
+                    prepend-icon="mdi-file-multiple"
+                    @change.native="updatePoi($event);"
+                  />
+                </v-card-subtitle>
+              </v-card-title>
+            </v-card>
             <v-checkbox
               id="convertToVoice"
               :value="currentPoi.convertToVoice"
@@ -171,9 +196,9 @@
       >
         <v-card>
           <v-card-title class="headline">
-            {{ this.$i18n.t('marker.deleteDialogTitle') }}
+            {{ this.$i18n.t('marker.deleteDialogTitle') }} 
           </v-card-title>
-          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText') }}</v-card-text>
+          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title:currentPoi.title}) }}</v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn
@@ -301,8 +326,6 @@ export default {
 
       const newPoi = Object.assign( {}, this.currentPoi, updatedPoi, this.poi)
       this.$store.dispatch("savePoi", newPoi);
-      // TODO i18n
-      this.$store.commit('setMessage', {title: 'Point Saved', message:`The point ${this.title} has been saved`})
     },
     reset() {
       this.key++

@@ -38,7 +38,7 @@
             :position="toLatLngObject(item.position)"
             :draggable="true"
             @dragend="updateMarkerLatLng"
-            @dragstart="setMarkerToCurrent"
+            @dragstart="setMarkerToCurrent(item)"
             @click="markerClicked(item, index)"
             @mouseover="markerHovered = item"
             @mouseout="markerHovered = null"
@@ -120,14 +120,13 @@ export default {
     this.$store.dispatch('initPois')
   },
   methods: {
-    setMarkerToCurrent(marker) {
-      debugger
-      this.$store.commit("setCurrentPoi", marker);
+    setMarkerToCurrent(poi) {
+      this.$store.commit("setCurrentPoi", poi);
     },
-    updateMarkerLatLng(location) {
+    updateMarkerLatLng(marker) {
       const position = new this.firestore.GeoPoint(
-        location.latLng.lat(),
-        location.latLng.lng()
+        marker.latLng.lat(),
+        marker.latLng.lng()
       )
       const poi = { position };
 
@@ -155,15 +154,20 @@ export default {
       }
     },
     mapClick(mapClickEvent) {
+      const lat =mapClickEvent.latLng.lat()
+      const lng = mapClickEvent.latLng.lng()
+      
       const position = new this.firestore.GeoPoint(
-        mapClickEvent.latLng.lat(),
-        mapClickEvent.latLng.lng()
+        lat, lng
       );
       const poi = { title: "New from map " + this.pois.length, position };
       this.$store.dispatch("createPoi", poi);
       this.$store.commit("setCurrentPoi", poi);
       // open edit dialog
       this.markerEditDialog = true
+      this.$refs.mapRef.$mapPromise.then((map) => {
+        map.panTo({lat, lng})
+      })
     },
     markerClicked(marker, index) {
       // this.center = marker.position
@@ -175,14 +179,18 @@ export default {
       if (!place) {
         return;
       }
+      const lat = place.geometry.location.lat()
+      const lng = place.geometry.location.lng()
       const position = new this.firestore.GeoPoint(
-        place.geometry.location.lat(),
-        place.geometry.location.lng()
+        lat, lng
       );
       this.$store.dispatch("createPoi", {
         title: place.name,
         position
       });
+      this.$refs.mapRef.$mapPromise.then((map) => {
+        map.panTo({lat, lng})
+      })
     }
   }
 };

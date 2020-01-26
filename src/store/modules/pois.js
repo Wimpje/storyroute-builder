@@ -19,6 +19,24 @@ export const getters = {
     return state.pois
   }
 }
+const fileSchema = {
+  file: '', title: '', description: '', date: '', copyright: ''
+}
+
+const poiSchema = {
+  id:'',
+  title: '',
+  description: '',
+  position: {}, // firestore.GeoPoint
+  tags: [], // string
+  date: '', // firestore.Timestamp
+  otherFiles:[{...fileSchema, type:"other"}], // {file: '', title: '', description: '', date: '', copyright: ''}
+  videoFiles:[{...fileSchema, type:"video"}], // {file: '', title: '', description: '', date: '', copyright: ''}
+  audioFiles:[{...fileSchema, type:"audio"}], // {file: '', title: '', description: '', date: '', copyright: ''}
+  imageFiles:[{...fileSchema, type:"image"}], // {file: '', title: '', description: '', date: '', copyright: ''}
+  routeIds: [], // this will be filled when this poi is assigned to a route, data is stored in route object & poi (using cloud function to update this)
+}
+
 
 export const actions = {
   async initPois ({ commit }) {
@@ -54,13 +72,12 @@ export const actions = {
     const date = firestore.Timestamp.fromDate(new Date('1945-04-11'))
     const newPoi = {
       id: ref.id,
-      routeIds: [], // this will be filled when this poi is assigned to a route, data is stored in route object & poi (using cloud function to update this)
       position: poi.position,
-      tags: [],
       date: date,
       title: poi.title == null ? i18n.t('marker.title', { 'length': state.pois.length }) : poi.title,
       description: poi.description == null ? i18n.t('marker.description', { 'length': state.pois.length }) : poi.description
     }
+
     commit('createPoi', newPoi)
   },
   async savePoi ({ commit }, poi) {
@@ -72,9 +89,12 @@ export const actions = {
       else
         poi.updateCnt = 1
     }
-    console.log('saving poi: (NOT REALLY, commented out)', poi)
-   // await fb.db.collection('pois').doc(poi.id).set({ ...poi, saved: true, currentDate: firestore.FieldValue.serverTimestamp()})
+    console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
+    // await fb.db.collection('pois').doc(poi.id).set({ ...poi, saved: true, currentDate: firestore.FieldValue.serverTimestamp()})
+ 
     commit('savePoi', poi)
+    // TODO i18n
+    commit('setMessage', {title: 'Point Saved', message:`The point ${poi.title} has been saved`})
   },
   saveCurrentPoi ({ dispatch, state }) {
     dispatch('savePoi', state.currentPoi)
@@ -93,8 +113,10 @@ export const actions = {
 
 export const mutations = {
   createPoi (state, poi) {
-    state.pois.push(poi)
-    console.log('created poi', poi)
+    
+    state.poi = Object.assign({}, poiSchema, poi)
+    console.log('created poi', state.poi)
+    state.pois.push(state.poi)
   },
   savePoi (state, { poi }) {
     console.log('empty save poi function')

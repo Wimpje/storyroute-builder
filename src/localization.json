@@ -58,7 +58,7 @@
       "searchHint": "Klik op de kaart, of zoek om een nieuwe locatie te maken:",
       "delete": "verwijder",
       "deleteDialogTitle": "Verwijder locatie",
-      "deleteDialogText": "Verwijder deze locatie (dit heeft effect op alle routes die dit punt bevatten!)",
+      "deleteDialogText": "Verwijder locatie '{title}' - (dit heeft effect op alle routes die dit punt bevatten!)",
       "changeLocation": "verplaats",
       "save": "opslaan",
       "cancel": "annuleren",
