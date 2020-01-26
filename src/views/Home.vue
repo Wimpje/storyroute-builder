@@ -1,52 +1,77 @@
 <template>
-  <div>
-    <h1>Editor</h1>
-    <div class="map-autocomplete">
-      {{ $t('marker.searchHint') }}
-      <gmap-autocomplete
-        style="border:1px solid white"
-        :value="title"
-        :placeholder="$t('search.location')"
-        :select-first-on-enter="true"
-        @place_changed="setPlace"
-      />
-    </div>
-    <gmap-map
-      :center="center"
-      :zoom="zoom"
-      @click="mapClick"
-    >
-      <gmap-marker
-        v-for="(item, index) in pois"
-        :key="index"
-        :position="toLatLngObject(item.position)"
-        @click="markerClicked(item, index)"
-        @mouseover="markerHovered = item"
-        @mouseout="markerHovered = null"
-      />
+  <v-container fluid>
+    <v-row>
+      <v-col>
+        <div class="map-autocomplete">
+          {{ $t('marker.searchHint') }}
+          <gmap-autocomplete
+            :select-first-on-enter="true"
+            :options="autocompleteOptions"
+            @place_changed="setPlace"
+          >
+            <template v-slot:input="slotProps">
+              <v-text-field
+                ref="input" 
+                type="text"
+                :full-width="false"
 
-      <div
-        v-if="markerHovered"
-        slot="visible"
-      >
-        <div
-          style="bottom: 0; left: 0; background-color: #0000FF; color: white; position: absolute; z-index: 100"
-        >
-          {{ $t('marker.current', { 'current': markerHovered.title }) }}
+                prepend-inner-icon="mdi-map-marker"
+                :value="title" 
+                :placeholder="$t('search.location')"
+                
+                @listeners="slotProps.listeners"
+                @attrs="slotProps.attrs"
+              />
+            </template>
+          </gmap-autocomplete>
         </div>
-      </div>
-    </gmap-map>
-    <EditPoi
-      v-if="markerEditDialog"
-      :display.sync="markerEditDialog"
-    />
-  </div>
+        <gmap-map
+          ref="mapRef"
+          :center="center"
+          :zoom="zoom"
+          @click="mapClick"
+        >
+          <gmap-marker
+            v-for="(item, index) in pois"
+            :id="item.id"
+            :key="index"
+            :position="toLatLngObject(item.position)"
+            :draggable="true"
+            @dragend="updateMarkerLatLng"
+            @dragstart="setMarkerToCurrent"
+            @click="markerClicked(item, index)"
+            @mouseover="markerHovered = item"
+            @mouseout="markerHovered = null"
+          />
+
+          <div
+            v-if="markerHovered"
+            slot="visible"
+          >
+            <div
+              style="bottom: 0; left: 0; background-color: #0000FF; color: white; position: absolute; z-index: 100"
+            >
+              {{ $t('marker.current', { 'current': markerHovered.title }) }}
+            </div>
+          </div>
+        </gmap-map>
+      </v-col>
+      <v-col>
+        <EditPoi
+          v-if="markerEditDialog"
+          :display.sync="markerEditDialog"
+        />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
 import { mapGetters } from "vuex";
 import EditPoi from "@/components/EditPoi.vue";
 import fb from "@/plugins/firebase";
+import { gmapApi } from "vue2-google-maps-withscopedautocomp";
+
 
 export default {
   components: {
@@ -66,7 +91,7 @@ export default {
   computed: {
     ...mapGetters({
       pois: "getPois"
-    }),
+    }),    
     firestore: {get() {return fb.fb.firestore}},
     currentPoi: {
       get() {
@@ -75,6 +100,19 @@ export default {
       set(value) {
         this.$store.commit("setCurrentPoi", value);
       }
+    },
+     autocompleteOptions: {
+       get() {
+        return {
+          bounds: {
+            north: 52.57177959397309, // this.$refs.mapRef.$mapObject.getBounds().getNorthEast().lat()
+            south: 52.47778191849239, //this.$refs.mapRef.$mapObject.getBounds().getSouthWest().lat()
+            east: 6.521993817651368, //this.$refs.mapRef.$mapObject.getBounds().getNorthEast().lng()
+            west: 6.330591382348634, //this.$refs.mapRef.$mapObject.getBounds().getSouthWest().lng()
+          },
+          strictBounds: true
+        }
+      }
     }
   },
   created() {
@@ -82,7 +120,20 @@ export default {
     this.$store.dispatch('initPois')
   },
   methods: {
-    
+    setMarkerToCurrent(marker) {
+      debugger
+      this.$store.commit("setCurrentPoi", marker);
+    },
+    updateMarkerLatLng(location) {
+      const position = new this.firestore.GeoPoint(
+        location.latLng.lat(),
+        location.latLng.lng()
+      )
+      const poi = { position };
+
+      const newPoi = Object.assign( {}, this.currentPoi, poi )
+      this.$store.dispatch("savePoi", newPoi);
+    },
     toLatLngObject: poi => {
       const isNumber = value => {
         if (typeof value !== "number") {
@@ -110,6 +161,9 @@ export default {
       );
       const poi = { title: "New from map " + this.pois.length, position };
       this.$store.dispatch("createPoi", poi);
+      this.$store.commit("setCurrentPoi", poi);
+      // open edit dialog
+      this.markerEditDialog = true
     },
     markerClicked(marker, index) {
       // this.center = marker.position

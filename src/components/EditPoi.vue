@@ -1,24 +1,32 @@
 /* eslint-disable object-shorthand */
 <template>
   <div>
-    <v-dialog
-      v-model="shouldDisplay"
-      scrollable
-      max-width="500px"
+    <v-card
+      flat
     >
+      <v-toolbar dense>
+        <v-toolbar-title>
+          {{ this.$i18n.t('marker.addEdit') }}
+        </v-toolbar-title>
+
+        <v-spacer />
+
+        <v-btn
+          icon
+          @click="deleteConfirmDialog = true"
+        >
+          <v-icon>mdi-delete</v-icon>
+        </v-btn>
+      </v-toolbar>
       <v-form
         :key="key"
+        ref="poiForm"
         v-model="valid"
         :lazy-validation="lazy"
         @submit.prevent="save"
       >
         <v-card>
-          <v-card-title>
-            <h2>{{ this.$i18n.t('marker.addEdit') }}</h2>
-            <div>{{ this.$i18n.t('marker.select') }}</div>
-          </v-card-title>
-          <v-divider />
-          <v-card-text style="height: 300px;">
+          <v-card-text>
             <v-text-field
               id="title"
               name="title"
@@ -64,8 +72,7 @@
             <v-menu
               ref="datePickerMenu"
               v-model="showDatePicker"
-              :close-on-content-click="true"
-              :return-value="date"
+              :close-on-content-click="false"
               :nudge-right="40"
               transition="scale-transition"
               offset-y
@@ -75,22 +82,19 @@
               <template v-slot:activator="{ on }">
                 <v-text-field
                   id="date"
-                  v-model="date"
+                  :value="displayDate"
                   :label="$t('poi.date')"
-                  :rules="someDate"
                   prepend-icon="mdi-calendar"
                   readonly
                   v-on="on"
-                  @change.native="updatePoi($event);"
                 />
               </template>
               <v-date-picker
-                v-if="showDatePicker"
                 v-model="date"
                 :picker-date="picker.date"
                 :min="picker.min"
                 :max="picker.max"
-                @click="selectDate(this)"
+                @input="showDatePicker = false;"
               />
             </v-menu>
             <v-file-input
@@ -145,23 +149,9 @@
             <v-btn
               color="primary"
               class="mr-4"
-              @click="changeMarkerLocation"
-            >
-              {{ this.$i18n.t('marker.changeLocation') }}
-            </v-btn>
-            <v-btn
-              color="primary"
-              class="mr-4"
               type="submit"
             >
               {{ this.$i18n.t('marker.save') }}
-            </v-btn>
-            <v-btn
-              color="error"
-              class="mr-4"
-              @click="reset"
-            >
-              {{ this.$i18n.t('marker.delete') }}
             </v-btn>
             <v-btn
               class="mr-4"
@@ -172,12 +162,43 @@
           </v-card-actions>
         </v-card>
       </v-form>
-    </v-dialog>
+    </v-card>
+    <v-row justify="center">
+      <v-dialog
+        v-model="deleteConfirmDialog"
+        persistent
+        max-width="290"
+      >
+        <v-card>
+          <v-card-title class="headline">
+            {{ this.$i18n.t('marker.deleteDialogTitle') }}
+          </v-card-title>
+          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText') }}</v-card-text>
+          <v-card-actions>
+            <v-spacer />
+            <v-btn
+              color="green darken-1"
+              text
+              @click="reset"
+            >
+              Delete
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="deleteConfirmDialog = false"
+            >
+              Cancel
+            </v-btn>
+          </v-card-actions>
+        </v-card>
+      </v-dialog>
+    </v-row>
   </div>
 </template>
 
 <script>
-import { gmapApi } from "vue2-google-maps";
+import { gmapApi } from "vue2-google-maps-withscopedautocomp";
 import { mapGetters, mapActions } from "vuex";
 
 import fb from "@/plugins/firebase";
@@ -207,7 +228,8 @@ export default {
       tags: [],
       // the poi currently edited, and which will be saved when done.
       poi: {},
-      changeMarkerInput: false,
+      deleteConfirmDialog:false,
+      displayDate:'',
       picker: {
         min: "1940-01-01",
         max: "1945-12-31",
@@ -230,24 +252,37 @@ export default {
     date: {
       get: function() {
         // this is not 100% perfect, but since we're not messing with timezones it'll do the trick
-        if (this.currentPoi && this.currentPoi.date) {
-          return this.currentPoi.date
+        if (this.poi && this.poi.date) {
+          const date = this.poi.date
             .toDate()
             .toISOString()
             .slice(0, 10);
+            console.log('converted to date', date)
+            return date
         } else {
+          console.warn('using default date of 11 april 1945')
           return "1945-04-11";
         }
       },
       // eslint-disable-next-line object-shorthand
       set: function(date) {
-        this.poi.date = fb.fb.firestore.Timestamp.fromDate(new Date(date));
+        console.log('setting date to  date', date)
+        this.poi.date = fb.fb.firestore.Timestamp.fromDate(new Date(date))
+        this.displayDate = date
+        //this.$set(this.poi, 'date', fb.fb.firestore.Timestamp.fromDate(new Date(date)));
+
       }
     }
+  },
+  created() {
+    this.displayDate = this.date
   },
   methods: {
     setDescription(description) {
       this.description = description;
+    },
+    setDate(date) {
+      this.date = date
     },
     updatePoi(e) {
       console.log('setting local poi from form element', e)
@@ -266,26 +301,17 @@ export default {
 
       const newPoi = Object.assign( {}, this.currentPoi, updatedPoi, this.poi)
       this.$store.dispatch("savePoi", newPoi);
-      this.shouldDisplay = false;
-      this.changeMarkerInput = false;
+      // TODO i18n
+      this.$store.commit('setMessage', {title: 'Point Saved', message:`The point ${this.title} has been saved`})
     },
     reset() {
       this.key++
       this.$refs.poiForm.reset();
       this.$store.dispatch("removeCurrentPoi");
       this.shouldDisplay = false;
-      this.changeMarkerInput = false;
     },
     resetValidation() {
       this.$refs.poiForm.resetValidation();
-    },
-    changeMarkerLocation() {
-      // this should communicate to parent somehow that next click is for current poi
-      this.changeMarkerInput = true;
-      this.$store.commit(
-        "setMessage",
-        "Click anywhere on map to move to new location"
-      );
     }
   }
 };

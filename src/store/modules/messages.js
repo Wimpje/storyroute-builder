@@ -1,21 +1,29 @@
-
+const TIMEOUT = 5000
 export const state = () => ({
-  message: null,
-  duration: 5000
+  message: '',
+  title: '',
+  duration: TIMEOUT
 })
 
 // mutations
 export const mutations = {
-  setMessage (state, data) {
-    state.message = data
-    state.duration = 5000
+  setMessage (state, payload) {
+    if (payload.message) 
+      state.message = payload.message 
+    else
+      state.message = ''
+
+    if (payload.title) 
+      state.title = payload.title 
+    else
+      state.title = ''
+
+    state.duration = payload.duration || TIMEOUT
   },
   clearMessage (state) {
-    state.message = null
-  },
-  setMessageObject (state, data) {
-    state.message = data.message
-    state.duration = data.duration
+    state.title = ''
+    state.message = ''
+    state.duration = TIMEOUT
   }
 }
 

@@ -23,7 +23,8 @@ export const getters = {
 export const actions = {
   async initPois ({ commit }) {
     const ref = await fb.db.collection('pois')
-    // not efficient! Think about this (it does make collaborative editing sort of possible...)
+    // TODO not efficient! Think about this (it does make collaborative editing sort of possible...)
+    // causes lots of read/writes for points... 
     ref.onSnapshot((snapShot) => {
       commit('setPois', [])
       snapShot.forEach((poi) => {

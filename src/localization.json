@@ -42,7 +42,7 @@
   },
   "nl": {
     "search": {
-      "location": "zoeken een locatie"
+      "location": "zoek een locatie"
     },
     "validation": {
       "someDateRequired": "Datum nodig",
@@ -57,6 +57,8 @@
       "select": "Selecteer een locatie",
       "searchHint": "Klik op de kaart, of zoek om een nieuwe locatie te maken:",
       "delete": "verwijder",
+      "deleteDialogTitle": "Verwijder locatie",
+      "deleteDialogText": "Verwijder deze locatie (dit heeft effect op alle routes die dit punt bevatten!)",
       "changeLocation": "verplaats",
       "save": "opslaan",
       "cancel": "annuleren",

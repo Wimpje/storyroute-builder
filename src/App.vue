@@ -1,8 +1,10 @@
 <template>
   <v-app dark>
     <v-navigation-drawer
-      v-model="drawer"
+      permanent
+      expand-on-hover
       app
+      dark
     >
       <v-list>
         <v-list-item
@@ -22,12 +24,10 @@
       </v-list>
     </v-navigation-drawer>
     <v-app-bar
-      :clipped-left="clipped"
-      fixed
+      flat
       app
+      dark
     >
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-
       <v-toolbar-title v-text="title" />
       <v-spacer />
     </v-app-bar>
@@ -37,47 +37,46 @@
       </v-container>
     </v-content>
     <v-footer
-      :fixed="fixed"
+
       app
+      dark
     >
-      <v-snackbar v-model="messages">
-        {{ messages }}
+      <v-snackbar v-model="toastShow">
+        <h3>{{ toastTitle }}</h3>
+        <span>&nbsp;</span>
+        <div>{{ toastMessage }}</div>
         <v-btn
           color="pink"
           text
-          @click="messages = ''"
+          @click="toastShow = false"
         >
           Close
         </v-btn>
       </v-snackbar>
-      <span>&copy; 2019 - nosmallthing.nl</span>
+      <span v-text="footerTitle" />
     </v-footer>
   </v-app>
 </template>
 
 <script>
+import router from '@/router'
+
 export default {
   data() {
     return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      miniVariant: true
+      toastShow: false,
+      toastTitle: '',
+      toastMessage: ''
     };
   },
   computed: {
     user() {
       return (this.$store.state.auth || {}).user || null;
     },
-    messages: {
-      get() {
-        return this.$store.state.messages.message
-      },
-      set(value) {
-        return this.$store.commit("setMessage", value);
-      }
-    },
     title() {
+      return router.currentRoute.name
+    },
+    footerTitle() {
       return this.user
         ? this.$t("title.loggedIn", { user: this.user.name })
         : this.$t("title.loggedOut");
@@ -101,6 +100,16 @@ export default {
         }
       ];
     }
+  },
+  created() {
+    const state = this
+    this.$store.subscribe((mutation, s) => {
+      if (mutation.type === 'setMessage') {
+        state.toastMessage = this.$store.state.messages.message
+        state.toastTitle = this.$store.state.messages.title
+        state.toastShow  = typeof state.toastMessage !== 'undefined' && state.toastMessage != null && state.toastMessage.length > 0
+      }
+    })
   }
 };
 </script>

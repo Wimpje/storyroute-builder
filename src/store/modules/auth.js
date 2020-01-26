@@ -45,7 +45,8 @@ export const actions = {
       commit('setUser', data)
     } catch (err) {
       commit('clearUser')
-      commit('setMessageObject', err, { root: true })
+      commit('setMessage', {title: 'Error', message: err, duration: 15000}, { root: true })
+
     }
   },
   // eslint-disable-next-line object-shorthand
@@ -58,7 +59,7 @@ export const actions = {
       window.$cookies.set('user', user, { path: '/' })
       window.$cookies.set('Authorization', token, { path: '/', maxAge: tokenExpiry })
     } catch (error) {
-      commit('setMessageObject', { message: error.message, duration: 15000 }, { root: true })
+      commit('setMessage', {title: 'Error', message:error.message, duration:15000}, { root: true })
     }
   },
   // eslint-disable-next-line object-shorthand
