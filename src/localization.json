@@ -25,11 +25,16 @@
       "description": "Description",
       "date": "Date",
       "tags": "Tags",
-      "tagsHint": "Fill in tags",
-      "filesOther": "Other files (documents)",
-      "filesAudio": "Audio files",
-      "filesVideo": "Video files",
-      "filesImage": "Image files"
+      "tagsHint": "Fill in tags"
+     },
+     "file": {
+      "other": "Other files (documents)",
+      "audio": "Audio files",
+      "video": "Video files",
+      "image": "Images",
+      "uploadHint": "Upload your file",
+      "type": "File type",
+      "title": "File title"
     },
     "user": {
       "login": "Log in"
@@ -72,11 +77,16 @@
       "description": "Beschrijving",
       "date": "Datum",
       "tags": "Tags",
-      "tagsHint": "Fill in tags",
-      "filesOther": "Overige bestanden (documenten)",
-      "filesAudio": "Audio bestanden",
-      "filesVideo": "Video bestanden",
-      "filesImage": "Afbeeldingen"
+      "tagsHint": "Fill in tags"      
+    },
+    "file": {
+      "other": "Overige bestanden (documenten)",
+      "audio": "Audio bestanden",
+      "video": "Video bestanden",
+      "image": "Afbeeldingen",
+      "uploadHint": "Upload hier uw bestand, afbeeldingen worden automatisch verkleind",
+      "type": "Bestandstype",
+      "title": "Titel"
     },
     "user": {
       "login": "Log in",

@@ -102,71 +102,30 @@
                 :picker-date="picker.date"
                 :min="picker.min"
                 :max="picker.max"
-                @input="showDatePicker = false;"
+                @input="showDatePicker = false"
               />
             </v-menu>
-            <v-file-input
-              id="imageFiles"
-              :label="$t('poi.filesImage')"
-              :value="currentPoi.imageFiles"
-              accept="image/*"
-              :multiple="true"
-              filled
-              prepend-icon="mdi-camera"
-              @change.native="updatePoi($event);"
-            />
-            <v-file-input
-              id="videoFiles"
-              :label="$t('poi.filesVideo')"
-              :value="currentPoi.videoFiles"
-              :multiple="true"
-              accept="video/*"
-              filled
-              prepend-icon="mdi-video-vintage"
-              @change.native="updatePoi($event);"
-            />
-            <v-file-input
-              id="audioFiles"
-              :label="$t('poi.filesAudio')"
-              :value="currentPoi.audioFiles"
-              :multiple="true"
-              accept="audio/*"
-              filled
-              prepend-icon="mdi-volume-high"
-              @change.native="updatePoi($event);"
-            />
-            <!--<file-input :files.sync="currentPoi.otherFiles" />-->
-            <v-card
-              v-for="(otherFile, index) in currentPoi.otherFiles"
+            <div
+              v-for="(file, index) in currentPoi.files"
               :key="index"
             >
-              <v-card-title
-                class="headline"
-              >
-                <v-card-title>
-                  {{ otherFile.type }}
-                </v-card-title>
-                <v-card-subtitle>
-                  <v-file-input
-            
-                    :id="'otherfile'+index"
-               
-                    :label="$t('poi.filesOther')"
-                    :value="otherFile.file"
-                    :multiple="true"
-                    accept="audio/*"
-                    filled
-                    prepend-icon="mdi-file-multiple"
-                    @change.native="updatePoi($event);"
-                  />
-                </v-card-subtitle>
-              </v-card-title>
-            </v-card>
+              <file-input
+                :file.sync="file"
+                :index.sync="index"
+                @change.native="updatePoi($event)"
+                @delete="deleteFile(index, file)"
+              />
+            </div>
+            <v-btn
+              @click="addFile"
+            >
+              Add file
+            </v-btn>
             <v-checkbox
               id="convertToVoice"
               :value="currentPoi.convertToVoice"
               :label="$t('marker.convertTextToVoice')"
-              @change.native="updatePoi($event);"
+              @change.native="updatePoi($event)"
             />
           </v-card-text>
           <v-divider />
@@ -225,10 +184,13 @@
 <script>
 import { gmapApi } from "vue2-google-maps-withscopedautocomp";
 import { mapGetters, mapActions } from "vuex";
-
+import FileInput from "@/components/FileInput.vue";
 import fb from "@/plugins/firebase";
 
 export default {
+  components: {
+    FileInput
+  },
   props: {
     display: {
       type: Boolean,
@@ -303,6 +265,12 @@ export default {
     this.displayDate = this.date
   },
   methods: {
+    addFile() {
+      this.$store.dispatch("addNewFileToPoi")
+    },
+    deleteFile(index, file) {
+      this.$store.dispatch('deleteFile', index, file)
+    },
     setDescription(description) {
       this.description = description;
     },

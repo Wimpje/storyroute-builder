@@ -19,22 +19,39 @@ export const getters = {
     return state.pois
   }
 }
+
+export const FileTypes = [
+  'image', 'video', 'audio', 'other'
+]
+
 const fileSchema = {
-  file: '', title: '', description: '', date: '', copyright: ''
+  file: '', 
+  title: '', 
+  description: '', 
+  date: '', 
+  copyright: '', 
+  type: '' // one of FileTypes
 }
 
-const poiSchema = {
+const urlSchema = {
+  url: '', 
+  title: '', 
+  description: ''
+}
+
+export const Schema = {
   id:'',
   title: '',
   description: '',
   position: {}, // firestore.GeoPoint
   tags: [], // string
   date: '', // firestore.Timestamp
-  otherFiles:[{...fileSchema, type:"other"}], // {file: '', title: '', description: '', date: '', copyright: ''}
-  videoFiles:[{...fileSchema, type:"video"}], // {file: '', title: '', description: '', date: '', copyright: ''}
-  audioFiles:[{...fileSchema, type:"audio"}], // {file: '', title: '', description: '', date: '', copyright: ''}
-  imageFiles:[{...fileSchema, type:"image"}], // {file: '', title: '', description: '', date: '', copyright: ''}
+  leadImage: '', // image for display
+  urls: [{...urlSchema }],
+  files:[{...fileSchema}], // {file: '', title: '', description: '', date: '', copyright: '', type:''}
   routeIds: [], // this will be filled when this poi is assigned to a route, data is stored in route object & poi (using cloud function to update this)
+  author:'', // name of point creator
+  googleVoice: false // read aloud with google voice 
 }
 
 
@@ -51,6 +68,12 @@ export const actions = {
         commit('createPoi', p)
       })
     })
+  },
+  addNewFileToPoi({commit}) {
+   commit('addNewFile', Object.assign({}, Schema))
+  },
+  deleteFile({commit}, index, file){
+    commit('deleteFile', index, file)
   },
   getPois ({ state }) {
     return state.pois
@@ -113,10 +136,16 @@ export const actions = {
 
 export const mutations = {
   createPoi (state, poi) {
-    
-    state.poi = Object.assign({}, poiSchema, poi)
+    state.poi = Object.assign({}, Schema, poi)
     console.log('created poi', state.poi)
     state.pois.push(state.poi)
+  },
+  addNewFile (state, fileObject) {
+    state.currentPoi.files.push(fileObject)
+  },
+  deleteFile(state, index, file) {
+    console.log('MUTATION: deleting file', index, file)
+    state.currentPoi.files.splice(index,1)
   },
   savePoi (state, { poi }) {
     console.log('empty save poi function')
@@ -143,5 +172,7 @@ export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
+  Schema,
+  FileTypes
 }
