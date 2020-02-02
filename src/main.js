@@ -8,7 +8,7 @@ import store from '@/store'
 import VueCookies from 'vue-cookies'
 import firebase from './plugins/firebase'
 import * as VueGoogleMaps from 'vue2-google-maps-withscopedautocomp'
-
+Vue.config.devtools = true
 // Cookies
 Vue.use(VueCookies)
 Vue.$cookies.config('1h')
@@ -35,13 +35,12 @@ Vue.use(VueGoogleMaps, {
   // installComponents: true,
 })
 
+Vue.use(firebase)
 
-
-Vue.config.productionTip = false
 
 // only load app when user state is determined (logged in / not logged in)
 let app = '';
-firebase.auth.onAuthStateChanged(user => {
+firebase.auth().onAuthStateChanged(user => {
   console.log('auth state changed, user = ', user)
   store.dispatch("set", user)
   if(!app){
@@ -52,7 +51,11 @@ firebase.auth.onAuthStateChanged(user => {
       firebase,
       i18n,
       render: h => h(App)
-    }).$mount('#app')
+    })
+    // make this.$firebase etc accessible in stores
+    store.$app = app;
+    app.$mount('#app')
   }
+  Vue.config.devtools = true
   
 });

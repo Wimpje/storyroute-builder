@@ -1,5 +1,4 @@
 //import { fireStore } from 'firebase'
-import fb from '@/plugins/firebase'
 
 export const state = () => {
   return {
@@ -18,15 +17,33 @@ export const getters = {
 }
 
 export const actions = {
-  async init ({ state }) {
-
-  }
+  initRoutes: async function ({ commit }) {
+    const ref = await this.$app.$firebase.firestore().collection('routes')
+    
+    // causes lots of read/writes for points... 
+    ref.onSnapshot((snapShot) => {
+      commit('setRoutes', [])
+      snapShot.forEach((poi) => {
+        const p = poi.data()
+        p.id = poi.id
+        commit('createRoute', p)
+      })
+    })
+  },
 }
 export const mutations = {
   async createRoute (state, { poi }) {
-    const ref = await fb.db.collection('routes').doc()
+    const ref = await this.$app.$firebase.firestore().collection('routes').doc()
 
     console.log('create', ref)
+  },
+  setCurrentRoute (state, val) {
+    // validate poi
+    console.log('setcurrent', val)
+    state.currentRoute = val
+  },
+  setRoutes(state, routes) {
+    state.routes = routes
   }
 }
 

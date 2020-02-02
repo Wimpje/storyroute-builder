@@ -42,7 +42,7 @@
               :rules="someText"
               :label="$t('poi.title')"
               required
-              @change.native="updatePoi($event);"
+              @input.native="updatePoi($event);"
             />
             <v-text-field
               id="description"
@@ -51,7 +51,7 @@
               :label="$t('poi.description')"
               required
               name="description"
-              @change.native="updatePoi($event);"
+              @input.native="updatePoi($event);"
             />
             <v-combobox
               id="tags"
@@ -63,7 +63,7 @@
               multiple
               persistent-hint
               small-chips
-              @change.native="updatePoi($event);"
+              @input.native="updatePoi($event);"
             >
               <template v-slot:no-data>
                 <v-list-item>
@@ -106,29 +106,49 @@
               />
             </v-menu>
             <div
+              v-for="(url, index) in currentPoi.urls"
+              :key="`url${index}`"
+            >
+              <url-input
+                id="url"
+                class="my-4"
+                :url.sync="url"
+                :index.sync="index"
+                @deleteUrl="deleteUrl"
+                @updateUrl="updateUrl"
+              />
+            </div>
+            <v-btn
+              @click="addNewUrlToPoi"
+            >
+              {{ urlAddLabel }}
+            </v-btn>
+          
+            <div
               v-for="(file, index) in currentPoi.files"
-              :key="index"
+              :key="`file${index}`"
             >
               <file-input
                 :file.sync="file"
                 :index.sync="index"
-                @change.native="updatePoi($event)"
-                @delete="deleteFile(index, file)"
-              />
+                class="my-4"
+                @deleteFile="deleteFile"
+                @updateFile="updateFile"
+              />     
             </div>
             <v-btn
-              @click="addFile"
+              @click="addNewFileToPoi"
             >
-              Add file
+              {{ fileAddLabel }}
             </v-btn>
             <v-checkbox
               id="convertToVoice"
               :value="currentPoi.convertToVoice"
               :label="$t('marker.convertTextToVoice')"
-              @change.native="updatePoi($event)"
+              @input.native="updatePoi($event)"
             />
           </v-card-text>
-          <v-divider />
+        
           <v-card-actions>
             <v-btn
               color="primary"
@@ -185,11 +205,11 @@
 import { gmapApi } from "vue2-google-maps-withscopedautocomp";
 import { mapGetters, mapActions } from "vuex";
 import FileInput from "@/components/FileInput.vue";
-import fb from "@/plugins/firebase";
+import UrlInput from "@/components/UrlInput.vue";
 
 export default {
   components: {
-    FileInput
+    FileInput, UrlInput
   },
   props: {
     display: {
@@ -225,6 +245,19 @@ export default {
     };
   },
   computed: {
+    urlAddLabel() {
+      if(this.currentPoi.urls && this.currentPoi.urls.length > 0 )
+        return 'Add another url'
+      else 
+        return 'Add url'
+    },
+    fileAddLabel() {
+      if(this.currentPoi.files && this.currentPoi.files.length > 0 )
+          return 'Add another file'
+      else 
+        return 'Add file'
+    }
+    ,
     shouldDisplay: {
       get() {
         return this.display;
@@ -254,9 +287,9 @@ export default {
       // eslint-disable-next-line object-shorthand
       set: function(date) {
         console.log('setting date to  date', date)
-        this.poi.date = fb.fb.firestore.Timestamp.fromDate(new Date(date))
+        this.poi.date = this.$firebase.firestore.Timestamp.fromDate(new Date(date))
         this.displayDate = date
-        //this.$set(this.poi, 'date', fb.fb.firestore.Timestamp.fromDate(new Date(date)));
+        //this.$set(this.poi, 'date', this.$firebase.firestore.Timestamp.fromDate(new Date(date)));
 
       }
     }
@@ -265,12 +298,7 @@ export default {
     this.displayDate = this.date
   },
   methods: {
-    addFile() {
-      this.$store.dispatch("addNewFileToPoi")
-    },
-    deleteFile(index, file) {
-      this.$store.dispatch('deleteFile', index, file)
-    },
+    ...mapActions(["addNewFileToPoi","addNewUrlToPoi","deleteFile", "deleteUrl", "updateFile", "updateUrl"]),
     setDescription(description) {
       this.description = description;
     },

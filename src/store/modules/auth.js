@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 
-import fb from '@/plugins/firebase'
 
 const tokenExpiry = process.env.VUE_APP_AUTH_TOKEN_EXPIRE || 1000
 
@@ -51,7 +50,7 @@ export const actions = {
   },
   // eslint-disable-next-line object-shorthand
   googleSignIn: async function ({ commit }) {
-    const result = await fb.auth.signInWithPopup(fb.googleAuth)
+    const result = await this.$app.$firebase.auth().signInWithPopup(this.$app.$firebase.auth.GoogleAuthProvider())
     try {
       const user = createUserFromGoogleResponse(result)
       const token = result.credential.accessToken
@@ -64,7 +63,7 @@ export const actions = {
   },
   // eslint-disable-next-line object-shorthand
   googleSignOut: async function ({ commit }, payload) {
-    await fb.auth.signOut()
+    await this.$app.$firebase.auth.signOut()
     try {
       // Removes user from Store
       commit('clearUser')

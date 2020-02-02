@@ -84,19 +84,24 @@ export default {
     items() {
       return [
         {
-          icon: "mdi-apps",
+          icon: "mdi-home",
           title: "Home",
           to: "/"
+        },
+        {
+          icon: "mdi-map-outline",
+          title: "Routes",
+          to: "/routes"
+        },
+        {
+          icon: "mdi-map-marker",
+          title: "Points",
+          to: "/points"
         },
         {
           icon: "mdi-login",
           title: this.user ? "Log out" : "Log in",
           to: '/user'
-        },
-        {
-          icon: "mdi-help",
-          title: "Help",
-          to: "/help"
         }
       ];
     }

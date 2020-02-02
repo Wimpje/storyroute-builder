@@ -1,5 +1,6 @@
 import fb from 'firebase/app'
 import 'firebase/firestore'
+import 'firebase/storage';
 import 'firebase/auth';
 
 
@@ -13,8 +14,14 @@ const config = {
 }
 
 fb.initializeApp(config);
-const db = fb.firestore();
-const auth = fb.auth();
-const googleAuth = new fb.auth.GoogleAuthProvider();
 
-export default {fb, db, auth, googleAuth};
+const firebasePlugin = {
+  auth() {
+    return fb.auth()
+  },
+  install(Vue) {
+    Vue.prototype.$firebase = fb
+  }
+}
+
+export default firebasePlugin

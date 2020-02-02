@@ -24,17 +24,29 @@
       "title": "Title",
       "description": "Description",
       "date": "Date",
+      "url": "Website / link",
+      "urlTitle": "Title",
+      "urlDescription": "Description",
       "tags": "Tags",
       "tagsHint": "Fill in tags"
      },
+     "tags": {
+      "tags": "tags",
+      "noResults": "No results matching "
+     },
+     "content": {
+       "type": "Content type",
+        "other": "Other (documents, ...)",
+        "audio": "Audio",
+        "video": "Video",
+        "image": "Image"
+     },
      "file": {
-      "other": "Other files (documents)",
-      "audio": "Audio files",
-      "video": "Video files",
-      "image": "Images",
+      "file": "File",
       "uploadHint": "Upload your file",
       "type": "File type",
-      "title": "File title"
+      "title": "Title",
+      "description": "Description"
     },
     "user": {
       "login": "Log in"
@@ -77,16 +89,24 @@
       "description": "Beschrijving",
       "date": "Datum",
       "tags": "Tags",
-      "tagsHint": "Fill in tags"      
+      "url": "Website / link",
+      "urlTitle": "Titel",
+      "urlDescription": "Beschrijving",
+      "tagsHint": "Fill in tags"
+    },
+    "content": {
+      "type": "Inhoud type",
+       "other": "Overig (documenten, ...)",
+       "audio": "Audio",
+       "video": "Video",
+       "image": "Afbeelding"
     },
     "file": {
-      "other": "Overige bestanden (documenten)",
-      "audio": "Audio bestanden",
-      "video": "Video bestanden",
-      "image": "Afbeeldingen",
+      "file": "Bestand",
       "uploadHint": "Upload hier uw bestand, afbeeldingen worden automatisch verkleind",
       "type": "Bestandstype",
-      "title": "Titel"
+      "title": "Titel",
+      "description": "Beschrijving"
     },
     "user": {
       "login": "Log in",
