@@ -1,8 +1,10 @@
 <template>
   <div>
     <google-map
+      :show-autocomplete="true"
+      :pois="pois"
+      @marker-clicked="markerClicked"
       @mapClicked="mapClicked"
-      @markerClicked="markerClicked"
     />
     <EditPoi
       v-if="markerEditDialog"
@@ -14,6 +16,7 @@
 <script>
 import EditPoi from "@/components/EditPoi.vue";
 import GoogleMap from "@/components/GoogleMap.vue";
+import { mapGetters } from "vuex";
 
 export default {
   components: {
@@ -28,12 +31,31 @@ export default {
   created() {
     this.$store.dispatch("initPois");
   },
+  computed: {
+    ...mapGetters({
+      pois: "getPois"
+    })
+  },
   methods: {
-    markerClicked () {
+    markerClicked (marker) {
+     
       this.markerEditDialog = true
     },
-    mapClicked() {
+    mapClicked(mapClickEvent) {
+       const lat = mapClickEvent.latLng.lat()
+      const lng = mapClickEvent.latLng.lng()
       
+      const position = new this.$firebase.firestore.GeoPoint(
+        lat, lng
+      );
+      const poi = { title: "New from map " + this.pois.length, position };
+      this.$store.dispatch("createPoi", poi);
+      this.$store.commit("setCurrentPoi", poi);
+      // open edit dialog
+      this.markerEditDialog = true
+      this.$refs.mapRef.$mapPromise.then((map) => {
+        map.panTo({lat, lng})
+      })
     }
 
   }

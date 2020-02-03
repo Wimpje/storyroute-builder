@@ -37,7 +37,6 @@
       </v-container>
     </v-content>
     <v-footer
-
       app
       dark
     >
@@ -66,15 +65,15 @@ export default {
     return {
       toastShow: false,
       toastTitle: '',
-      toastMessage: ''
+      toastMessage: '',
     };
   },
   computed: {
     user() {
       return (this.$store.state.auth || {}).user || null;
     },
-    title() {
-      return router.currentRoute.name
+    title: function () {
+      return this.$route.name
     },
     footerTitle() {
       return this.user

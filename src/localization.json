@@ -7,6 +7,9 @@
       "someDateRequired": "Needs a date",
       "someTextRequired": "Needs some text"
     },
+    "routes": {
+      "title":"Edit routes"
+    },
     "marker": {
       "description": "Description - {length}",
       "title": "Title - {length}",
@@ -52,6 +55,7 @@
       "login": "Log in"
     },
     "title": {
+      "title":"Create routes & points of interest",
       "loggedIn": "StoryRoute builder - Logged in as {user}",
       "loggedOut": "StoryRoute builder - Niet ingelogd"
     },
@@ -82,7 +86,8 @@
       "convertTextToVoice": "Converteer beschrijving naar Google Voice bestand"
     },
     "routes": {
-      "selectRoute": "Selecteer een route"
+      "selectRoute": "Selecteer een route",
+      "title":"Bewerk routes"
     },
     "poi": {
       "title": "Titel",
@@ -113,6 +118,7 @@
       "loggedInAs": "Ingelogd als {user}"
     },
     "title": {
+      "title":"Markeer punten met informatie en maak routes",
       "loggedIn": "StoryRoute builder - Ingelogd als {user}",
       "loggedOut": "StoryRoute builder - Niet ingelogd"
     },

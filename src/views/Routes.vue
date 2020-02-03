@@ -1,18 +1,25 @@
 <template>
   <div>
     <google-map
+      :show-autocomplete="false"
       @mapClicked="mapClicked"
       @markerClicked="markerClicked"
+    /> 
+    <EditRoutes
+      v-if="showRoutes"
+      :display.sync="showRoutes"
     />
   </div>
 </template>
 
 <script>
 import GoogleMap from "@/components/GoogleMap.vue";
+import EditRoutes from "@/components/EditRoutes.vue";
 
 export default {
  components: {
-    GoogleMap
+    GoogleMap,
+    EditRoutes
   },
    data() {
     return {
@@ -23,11 +30,12 @@ export default {
     this.$store.dispatch('initRoutes')
   },
   methods: {
-    markerClicked () {
+    markerClicked (mapClickEvent) {
       this.showRoutes = true
     },
     mapClicked() {
-      
+            this.showRoutes = true
+
     }
 
   }

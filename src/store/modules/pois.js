@@ -69,22 +69,22 @@ export const actions = {
     })
   },
   addNewFileToPoi({commit}) {
-   commit('addNewFile', Object.assign({}, FileSchema))
+   commit('addNewFileToPoi', Object.assign({}, FileSchema))
   },
   addNewUrlToPoi({commit}) {
-   commit('addNewUrl', Object.assign({}, UrlSchema))
+   commit('addNewUrlToPoi', Object.assign({}, UrlSchema))
   },
-  deleteFile({commit}, payload){
-    commit('deleteFile', payload)
+  deleteFileFromPoi({commit}, payload){
+    commit('deleteFileFromPoi', payload)
   },
-  deleteUrl({commit}, payload){
-    commit('deleteUrl', payload)
+  deleteUrlFromPoi({commit}, payload){
+    commit('deleteUrlFromPoi', payload)
   }, 
-  updateUrl({commit}, payload){
-    commit('updateUrl', payload)
+  updateUrlFromPoi({commit}, payload){
+    commit('updateUrlFromPoi', payload)
   },
-  updateFile({commit}, payload){
-    commit('updateFile', payload)
+  updateFileFromPoi({commit}, payload){
+    commit('updateFileFromPoi', payload)
   },
   getPois ({ state }) {
     return state.pois
@@ -117,7 +117,7 @@ export const actions = {
   async savePoi ({ commit }, poi) {
     // if updated, save updated-date
     if (!poi.currentDate) {
-      poi.updatedDate = this.$app.$firestore.FieldValue.serverTimestamp()
+      poi.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
       if(poi.updateCnt)
         poi.updateCnt = poi.updateCnt++
       else
@@ -151,31 +151,31 @@ export const mutations = {
     console.log('created poi', state.poi)
     state.pois.push(state.poi)
   },
-  addNewFile (state, fileObject) {
+  addNewFileToPoi (state, fileObject) {
     if (state.currentPoi.files)
       state.currentPoi.files.push(fileObject)
     else 
       state.currentPoi.files = [fileObject]
   },
-  addNewUrl (state, urlObject) {
+  addNewUrlToPoi (state, urlObject) {
     if(state.currentPoi.urls)
       state.currentPoi.urls.push(urlObject)
     else 
       state.currentPoi.urls = [urlObject]
   },
-  deleteFile(state, payload) {
+  deleteFileFromPoi(state, payload) {
     console.log('MUTATION: deleting file', payload)
     state.currentPoi.files.splice(payload.index, 1)
   },
-  deleteUrl(state, payload) {
+  deleteUrlFromPoi(state, payload) {
     console.log('MUTATION: deleting url', payload)
     state.currentPoi.urls.splice(payload.index, 1)
   },
-  updateUrl(state, payload) {
+  updateUrlFromPoi(state, payload) {
     console.log('MUTATION: updating url', payload)
     state.currentPoi.urls[payload.index] = Object.assign({}, state.currentPoi.urls[payload.index], payload.val)
   },
-  updateFile(state, payload) {
+  updateFileFromPoi(state, payload) {
     console.log('MUTATION: updating file', payload)
     state.currentPoi.files[payload.index] = Object.assign({}, state.currentPoi.files[payload.index], payload.val)
   },

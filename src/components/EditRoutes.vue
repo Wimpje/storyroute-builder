@@ -6,7 +6,7 @@
     >
       <v-toolbar dense>
         <v-toolbar-title>
-          {{ this.$i18n.t('marker.addEdit') }}
+          {{ this.$i18n.t('routes.addEdit') }}
         </v-toolbar-title>
 
         <v-spacer />
@@ -28,7 +28,7 @@
       </v-toolbar>
       <v-form
         :key="key"
-        ref="poiForm"
+        ref="routeForm"
         v-model="valid"
         :lazy-validation="lazy"
         @submit.prevent="save"
@@ -38,75 +38,24 @@
             <v-text-field
               id="title"
               name="title"
-              :value="currentPoi.title"
+              :value="currentRoute.title"
               :rules="someText"
-              :label="$t('poi.title')"
+              :label="$t('route.title')"
               required
-              @input.native="updatePoi($event);"
+              @input.native="updateRoute($event);"
             />
             <v-text-field
               id="description"
-              :value="currentPoi.description"
+              :value="currentroute.description"
               :rules="someText"
-              :label="$t('poi.description')"
+              :label="$t('route.description')"
               required
               name="description"
-              @input.native="updatePoi($event);"
+              @input.native="updateRoute($event);"
             />
-            <v-combobox
-              id="tags"
-              :items="currentPoi.tags"
-              :search-input.sync="tagSearch"
-              hide-selected
-              :hint="$t('poi.tagsHint')"
-              :label="$t('poi.tags')"
-              multiple
-              persistent-hint
-              small-chips
-              @input.native="updatePoi($event);"
-            >
-              <template v-slot:no-data>
-                <v-list-item>
-                  <v-list-item-content>
-                    <v-list-item-title>
-                      No results matching "
-                      <strong>{{ tagSearch }}</strong>". Press
-                      <kbd>enter</kbd> to create a new one
-                    </v-list-item-title>
-                  </v-list-item-content>
-                </v-list-item>
-              </template>
-            </v-combobox>
-            <v-menu
-              ref="datePickerMenu"
-              v-model="showDatePicker"
-              :close-on-content-click="false"
-              :nudge-right="40"
-              transition="scale-transition"
-              offset-y
-              max-width="290px"
-              min-width="290px"
-            >
-              <template v-slot:activator="{ on }">
-                <v-text-field
-                  id="date"
-                  :value="displayDate"
-                  :label="$t('poi.date')"
-                  prepend-icon="mdi-calendar"
-                  readonly
-                  v-on="on"
-                />
-              </template>
-              <v-date-picker
-                v-model="date"
-                :picker-date="picker.date"
-                :min="picker.min"
-                :max="picker.max"
-                @input="showDatePicker = false"
-              />
-            </v-menu>
+            
             <div
-              v-for="(url, index) in currentPoi.urls"
+              v-for="(url, index) in currentroute.urls"
               :key="`url${index}`"
             >
               <url-input
@@ -114,38 +63,38 @@
                 class="my-4"
                 :url.sync="url"
                 :index.sync="index"
-                @deleteUrl="deleteUrlFromPoi"
-                @updateUrl="updateUrlFromPoi"
+                @deleteUrl="deleteUrl"
+                @updateUrl="updateUrl"
               />
             </div>
             <v-btn
-              @click="addNewUrlToPoi"
+              @click="addNewUrlToRoute"
             >
               {{ urlAddLabel }}
             </v-btn>
           
             <div
-              v-for="(file, index) in currentPoi.files"
+              v-for="(file, index) in currentroute.files"
               :key="`file${index}`"
             >
               <file-input
                 :file.sync="file"
                 :index.sync="index"
                 class="my-4"
-                @deleteFile="deleteFileFromPoi"
-                @updateFile="updateFileFromPoi"
+                @deleteFile="deleteFile"
+                @updateFile="updateFile"
               />     
             </div>
             <v-btn
-              @click="addNewFileToPoi"
+              @click="addNewFileToRoute"
             >
               {{ fileAddLabel }}
             </v-btn>
             <v-checkbox
               id="convertToVoice"
-              :value="currentPoi.convertToVoice"
+              :value="currentroute.convertToVoice"
               :label="$t('marker.convertTextToVoice')"
-              @input.native="updatePoi($event)"
+              @input.native="updateRoute($event)"
             />
           </v-card-text>
         
@@ -177,7 +126,7 @@
           <v-card-title class="headline">
             {{ this.$i18n.t('marker.deleteDialogTitle') }} 
           </v-card-title>
-          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title:currentPoi.title}) }}</v-card-text>
+          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title: currentroute.title}) }}</v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn
@@ -228,31 +177,23 @@ export default {
         v => !!v || this.$i18n.t("validation.someTextRequired"),
         v => (v && v.length > 1) || this.$i18n.t("validation.atLeastChars", 1)
       ],
-      someDate: [v => !!v || this.$i18n.t("validation.someDateRequired")],
+   
       lazy: true,
-      showDatePicker: false,
-      tagSearch: null,
-      tags: [],
-      // the poi currently edited, and which will be saved when done.
-      poi: {},
+    
+      route: {},
       deleteConfirmDialog:false,
-      displayDate:'',
-      picker: {
-        min: "1940-01-01",
-        max: "1945-12-31",
-        date: "1945-04-11"
-      }
+   
     };
   },
   computed: {
     urlAddLabel() {
-      if(this.currentPoi.urls && this.currentPoi.urls.length > 0 )
+      if(this.currentroute.urls && this.currentroute.urls.length > 0 )
         return 'Add another url'
       else 
         return 'Add url'
     },
     fileAddLabel() {
-      if(this.currentPoi.files && this.currentPoi.files.length > 0 )
+      if(this.currentroute.files && this.currentroute.files.length > 0 )
           return 'Add another file'
       else 
         return 'Add file'
@@ -266,48 +207,25 @@ export default {
         this.$emit("update:display", value);
       }
     },
-    ...mapGetters(["currentPoi"]),
-    google: gmapApi,
+    ...mapGetters(["currentRoute"]),
+    google: gmapApi
     // eslint-disable-next-line object-shorthand
-    date: {
-      get: function() {
-        // this is not 100% perfect, but since we're not messing with timezones it'll do the trick
-        if (this.poi && this.poi.date) {
-          const date = this.poi.date
-            .toDate()
-            .toISOString()
-            .slice(0, 10);
-            console.log('converted to date', date)
-            return date
-        } else {
-          console.warn('using default date of 11 april 1945')
-          return "1945-04-11";
-        }
-      },
-      // eslint-disable-next-line object-shorthand
-      set: function(date) {
-        console.log('setting date to  date', date)
-        this.poi.date = this.$firebase.firestore.Timestamp.fromDate(new Date(date))
-        this.displayDate = date
-        //this.$set(this.poi, 'date', this.$firebase.firestore.Timestamp.fromDate(new Date(date)));
-
-      }
-    }
+    
   },
   created() {
     this.displayDate = this.date
   },
   methods: {
-    ...mapActions(["addNewFileToPoi","addNewUrlToPoi","deleteFileFromPoi", "deleteUrlFromPoi", "updateFileFromPoi", "updateUrlFromPoi"]),
+    ...mapActions(["addNewFileToRoute","addNewUrlToRoute","deleteFileFromRoute", "deleteUrlFromRoute", "updateFileFromRoute", "updateUrlFromRoute"]),
     setDescription(description) {
       this.description = description;
     },
     setDate(date) {
       this.date = date
     },
-    updatePoi(e) {
-      console.log('setting local poi from form element', e)
-      this.$set(this.poi, e.target.id, e.target.value);
+    updateRoute(e) {
+      console.log('setting local route from form element', e)
+      this.$set(this.route, e.target.id, e.target.value);
     },
     validate() {
       if (this.$refs.form.validate()) {
@@ -316,21 +234,21 @@ export default {
     },
     save(e) {
       // merge objects
-      const updatedPoi = {
+      const updated = {
         date: this.date
       };
 
-      const newPoi = Object.assign( {}, this.currentPoi, updatedPoi, this.poi)
-      this.$store.dispatch("savePoi", newPoi);
+      const newObject = Object.assign( {}, this.currentRoute, updated, this.route)
+      this.$store.dispatch("saveRoute", newObject);
     },
     reset() {
       this.key++
-      this.$refs.poiForm.reset();
-      this.$store.dispatch("removeCurrentPoi");
+      this.$refs.routeForm.reset();
+      this.$store.dispatch("removeCurrentRoute");
       this.shouldDisplay = false;
     },
     resetValidation() {
-      this.$refs.poiForm.resetValidation();
+      this.$refs.routeForm.resetValidation();
     }
   }
 };

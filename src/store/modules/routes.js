@@ -47,9 +47,22 @@ export const mutations = {
   }
 }
 
+export const Schema = {
+  id:'',
+  title: '',
+  description: '',
+  pois: [], // string
+  leadImage: '', // image for display
+  urls: [],
+  files:[], // {file: '', title: '', description: '', date: '', copyright: '', type:''}
+  author:'', // name of point creator
+  googleVoice: false // read aloud with google voice 
+}
+
 export default {
   state,
   getters,
   actions,
-  mutations
+  mutations,
+  Schema
 }

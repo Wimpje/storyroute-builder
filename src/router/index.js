@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import fb from '@/plugins/firebase'
+import i18n from '@/plugins/i18n';
 
 import Login from '@/components/auth/Login.vue'
 import Home from '@/views/Home.vue'
@@ -14,6 +15,13 @@ const r = new Router({
   mode: 'history',
   base: process.env.BASE_URL,
   routes: [
+    
+    {
+      path: '/',
+      name: 'Home',
+      component: Home
+    },
+    
     {
       path: '/user',
       name: 'Login',
@@ -25,7 +33,7 @@ const r = new Router({
       component: Routes,
       meta: {
         requiresAuth: true
-     }
+      }
     },
     {
       path: '/points',
@@ -33,7 +41,7 @@ const r = new Router({
       component: Points,
       meta: {
         requiresAuth: true
-     }
+      }
     },
     {
       path: '/help',
@@ -51,5 +59,10 @@ r.beforeEach((to, from, next) => {
   if (requiresAuth && !currentUser) next('/user');
   else next();
 });
+
+r.beforeEach((to, from, next) => {
+  document.title = to.name + " - " + i18n.t("title.title");
+  next()
+})
 
 export default r

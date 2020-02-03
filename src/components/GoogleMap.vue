@@ -2,7 +2,10 @@
   <v-container fluid>
     <v-row>
       <v-col>
-        <div class="map-autocomplete">
+        <div
+          v-if="showAutocomplete"
+          class="map-autocomplete"
+        >
           {{ $t('marker.searchHint') }}
           <gmap-autocomplete
             :select-first-on-enter="true"
@@ -64,13 +67,35 @@
 import { mapGetters } from "vuex";
 import { gmapApi } from "vue2-google-maps-withscopedautocomp";
 
-
 export default {
- 
+ props: {
+    showAutocomplete: {
+      type: Boolean,
+      default() {
+        return false;
+      }
+    },
+    center: {
+      type: Object,
+      default() {
+        return { lat: 52.5248059, lng: 6.426292600000011 };
+      }
+    },
+    zoom: {
+      type: Number,
+      default() {
+        return 12
+      }
+    },
+    pois: {
+      type: Array,
+      default() {
+        return []
+      }
+    }
+  },
   data() {
     return {
-      center: { lat: 52.5248059, lng: 6.426292600000011 },
-      zoom: 12,
       title: "",
       markerHovered: null,
       markerEditDialog: false,
@@ -79,9 +104,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters({
-      pois: "getPois"
-    }),    
+    
     currentPoi: {
       get() {
         return this.$store.state.pois.currentPoi;
@@ -142,27 +165,14 @@ export default {
       }
     },
     mapClick(mapClickEvent) {
-      const lat =mapClickEvent.latLng.lat()
-      const lng = mapClickEvent.latLng.lng()
-      
-      const position = new this.$firebase.firestore.GeoPoint(
-        lat, lng
-      );
-      const poi = { title: "New from map " + this.pois.length, position };
-      this.$store.dispatch("createPoi", poi);
-      this.$store.commit("setCurrentPoi", poi);
-      // open edit dialog
-      this.markerEditDialog = true
-      this.$emit('mapClicked')
-      this.$refs.mapRef.$mapPromise.then((map) => {
-        map.panTo({lat, lng})
-      })
+      this.$emit('mapClicked', mapClickEvent)
     },
     markerClicked(marker, index) {
-      // this.center = marker.position
+      this.center = marker.position
+      // TODO check does this work?
       this.$store.commit("setCurrentPoi", marker);
-      this.markerEditDialog = true;
-      this.$emit('markerClicked')
+
+      this.$emit('markerClicked', marker)
       console.log('marker clicked', marker, this)
     },
     setPlace(place) {
