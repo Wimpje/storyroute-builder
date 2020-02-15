@@ -3,10 +3,12 @@
     <v-row>
       <v-col>
         <div
-          v-if="showAutocomplete"
+          v-if="showAutoComplete"
           class="map-autocomplete"
         >
           {{ $t('marker.searchHint') }}
+          <v-icon>mdi-map-marker</v-icon>
+          <!-- in next version of vue-gmaps this works better probably -->
           <gmap-autocomplete
             :select-first-on-enter="true"
             :options="autocompleteOptions"
@@ -34,6 +36,10 @@
           :zoom="zoom"
           @click="mapClick"
         >
+          <directions-renderer
+            v-if="hasDirectionsResult"
+            :directions="directionsResult"
+          />
           <gmap-marker
             v-for="(item, index) in pois"
             :id="item.id"
@@ -52,7 +58,7 @@
             slot="visible"
           >
             <div
-              style="bottom: 0; left: 0; background-color: #0000FF; color: white; position: absolute; z-index: 100"
+              style="bottom: 0; left: 0; background-color: #0000FF; color: white; position: absolute; z-index: 100; padding:4px;"
             >
               {{ $t('marker.current', { 'current': markerHovered.title }) }}
             </div>
@@ -65,32 +71,17 @@
 
 <script>
 import { mapGetters } from "vuex";
-import { gmapApi } from "vue2-google-maps-withscopedautocomp";
-
+import { gmapApi } from "vue2-google-maps";
+import DirectionsRenderer from '@/plugins/directionsRenderer.js'
 export default {
- props: {
-    showAutocomplete: {
-      type: Boolean,
-      default() {
-        return false;
-      }
-    },
-    center: {
+  components: {
+    DirectionsRenderer
+  },
+  props: {
+    directionsResult: {
       type: Object,
       default() {
-        return { lat: 52.5248059, lng: 6.426292600000011 };
-      }
-    },
-    zoom: {
-      type: Number,
-      default() {
-        return 12
-      }
-    },
-    pois: {
-      type: Array,
-      default() {
-        return []
+        return { };
       }
     }
   },
@@ -98,13 +89,14 @@ export default {
     return {
       title: "",
       markerHovered: null,
-      markerEditDialog: false,
-      dataLoaded: false
+      dataLoaded: false,
+      hasDirectionsResult: false,
+      hasPoints: false
     };
   },
 
   computed: {
-    
+    ...mapGetters({zoom: "mapZoom", center: "mapCenter", showAutoComplete: "mapShowAutocomplete", pois:  "getPois"}),
     currentPoi: {
       get() {
         return this.$store.state.pois.currentPoi;
@@ -165,10 +157,17 @@ export default {
       }
     },
     mapClick(mapClickEvent) {
+      const lat = mapClickEvent.latLng.lat()
+      const lng = mapClickEvent.latLng.lng()
+
+      this.$refs.mapRef.$mapPromise.then((map) => {
+        map.panTo({lat, lng})
+      })
       this.$emit('mapClicked', mapClickEvent)
     },
     markerClicked(marker, index) {
-      this.center = marker.position
+      // marker or poi? make up your mind
+      this.$store.commit("setMapCenter", {lat: marker.position.latitude, lng: marker.position.longitude});
       // TODO check does this work?
       this.$store.commit("setCurrentPoi", marker);
 

@@ -1,9 +1,8 @@
 <template>
   <div>
     <google-map
-      :show-autocomplete="true"
       :pois="pois"
-      @marker-clicked="markerClicked"
+      @markerClicked="markerClicked"
       @mapClicked="mapClicked"
     />
     <EditPoi
@@ -30,6 +29,7 @@ export default {
   },
   created() {
     this.$store.dispatch("initPois");
+    
   },
   computed: {
     ...mapGetters({
@@ -53,9 +53,7 @@ export default {
       this.$store.commit("setCurrentPoi", poi);
       // open edit dialog
       this.markerEditDialog = true
-      this.$refs.mapRef.$mapPromise.then((map) => {
-        map.panTo({lat, lng})
-      })
+   
     }
 
   }

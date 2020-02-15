@@ -7,7 +7,7 @@ import router from '@/router'
 import store from '@/store'
 import VueCookies from 'vue-cookies'
 import firebase from './plugins/firebase'
-import * as VueGoogleMaps from 'vue2-google-maps-withscopedautocomp'
+import * as VueGoogleMaps from 'vue2-google-maps'
 Vue.config.devtools = true
 // Cookies
 Vue.use(VueCookies)

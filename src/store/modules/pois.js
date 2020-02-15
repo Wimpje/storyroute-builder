@@ -28,7 +28,8 @@ export const FileSchema = {
   date: '', 
   copyright: '', 
   firebaseUrl: '',
-  type: 'other' // one of ContentTypes
+  type: 'other', // one of ContentTypes
+  lead: false // use by default if set
 }
 
 export const UrlSchema = {
@@ -41,16 +42,17 @@ export const UrlSchema = {
 export const Schema = {
   id:'',
   title: '',
-  description: '',
-  position: {}, // firestore.GeoPoint
-  tags: [], // string
+  description: '',tags: [], // string
   date: '', // firestore.Timestamp
   leadImage: '', // image for display
   urls: [],
   files:[], // {file: '', title: '', description: '', date: '', copyright: '', type:''}
-  routeIds: [], // this will be filled when this poi is assigned to a route, data is stored in route object & poi (using cloud function to update this)
   author:'', // name of point creator
-  googleVoice: false // read aloud with google voice 
+  convertToVoice: false // read aloud with google voice 
+}
+const PoiSchema = {
+  routeIds: [], // this will be filled when this poi is assigned to a route, data is stored in route object & poi (using cloud function to update this)
+  position: {}, // firestore.GeoPoint 
 }
 
 
@@ -123,8 +125,10 @@ export const actions = {
       else
         poi.updateCnt = 1
     }
-    console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
-    // await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, currentDate: firestore.FieldValue.serverTimestamp()})
+    const user = (this.$app.$store.state.auth || {}).user
+    poi.author = user.email ? user.email : ''
+    // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
+    await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, currentDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
  
     commit('savePoi', poi)
     // TODO i18n
@@ -147,9 +151,9 @@ export const actions = {
 
 export const mutations = {
   createPoi (state, poi) {
-    state.poi = Object.assign({}, Schema, poi)
-    console.log('created poi', state.poi)
-    state.pois.push(state.poi)
+    const newPoi = Object.assign({}, Schema, PoiSchema, poi)
+    console.log('created poi', newPoi)
+    state.pois.push(newPoi)
   },
   addNewFileToPoi (state, fileObject) {
     if (state.currentPoi.files)
@@ -208,5 +212,6 @@ export default {
   Schema,
   ContentTypes,
   UrlSchema,
-  FileSchema
+  FileSchema,
+  PoiSchema
 }

@@ -8,7 +8,8 @@
       "someTextRequired": "Needs some text"
     },
     "routes": {
-      "title":"Edit routes"
+      "title":"Edit routes",
+      "choose": "choose route"
     },
     "marker": {
       "description": "Description - {length}",
@@ -87,7 +88,8 @@
     },
     "routes": {
       "selectRoute": "Selecteer een route",
-      "title":"Bewerk routes"
+      "title":"Bewerk routes",
+      "choose": "Kies route"
     },
     "poi": {
       "title": "Titel",
@@ -122,6 +124,7 @@
       "loggedIn": "StoryRoute builder - Ingelogd als {user}",
       "loggedOut": "StoryRoute builder - Niet ingelogd"
     },
+  
     "welcome": "Welkom"
   }
 }

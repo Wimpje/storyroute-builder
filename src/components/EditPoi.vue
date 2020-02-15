@@ -202,7 +202,7 @@
 </template>
 
 <script>
-import { gmapApi } from "vue2-google-maps-withscopedautocomp";
+import { gmapApi } from "vue2-google-maps";
 import { mapGetters, mapActions } from "vuex";
 import FileInput from "@/components/FileInput.vue";
 import UrlInput from "@/components/UrlInput.vue";

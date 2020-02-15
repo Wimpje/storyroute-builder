@@ -151,7 +151,7 @@
 </template>
 
 <script>
-import { gmapApi } from "vue2-google-maps-withscopedautocomp";
+import { gmapApi } from "vue2-google-maps";
 import { mapGetters, mapActions } from "vuex";
 import FileInput from "@/components/FileInput.vue";
 import UrlInput from "@/components/UrlInput.vue";
@@ -181,8 +181,11 @@ export default {
       lazy: true,
     
       route: {},
-      deleteConfirmDialog:false,
-   
+      deleteConfirmDialog: false,
+      directionsService: {},
+      directionsDisplay: {},
+      travelModes: ['BICYCLING', 'DRIVING', 'WALKING'],
+      travelMode: 'BICYCLING'
     };
   },
   computed: {
@@ -216,7 +219,7 @@ export default {
     this.displayDate = this.date
   },
   methods: {
-    ...mapActions(["addNewFileToRoute","addNewUrlToRoute","deleteFileFromRoute", "deleteUrlFromRoute", "updateFileFromRoute", "updateUrlFromRoute"]),
+    ...mapActions(["addNewFileToRoute", "addNewUrlToRoute","deleteFileFromRoute", "deleteUrlFromRoute", "updateFileFromRoute", "updateUrlFromRoute"]),
     setDescription(description) {
       this.description = description;
     },
@@ -238,7 +241,7 @@ export default {
         date: this.date
       };
 
-      const newObject = Object.assign( {}, this.currentRoute, updated, this.route)
+      const newObject = Object.assign({}, this.currentRoute, updated, this.route)
       this.$store.dispatch("saveRoute", newObject);
     },
     reset() {
@@ -249,6 +252,23 @@ export default {
     },
     resetValidation() {
       this.$refs.routeForm.resetValidation();
+    },
+    getRoute: function (start, destination, mapRef) {
+      this.directionsService = new google.maps.DirectionsService()
+      this.directionsDisplay = new google.maps.DirectionsRenderer()
+      this.directionsDisplay.setMap(mapRef.$mapObject)
+      var vm = this
+      vm.directionsService.route({
+        origin: start, // Can be coord or also a search query
+        destination: destination,
+        travelMode: this.travelMode
+      }, function (response, status) {
+        if (status === 'OK') {
+          vm.directionsDisplay.setDirections(response) // draws the polygon to the map
+        } else {
+          console.log('Directions request failed due to ' + status)
+        }
+      })
     }
   }
 };

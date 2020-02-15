@@ -1,10 +1,14 @@
-//import { fireStore } from 'firebase'
+import { Schema, ContentTypes } from "@/store/modules/pois.js";
+import i18n from '@/plugins/i18n';
+
+export const RouteSchema = {
+  poiIds: []
+}
 
 export const state = () => {
   return {
-    routes: ['aap', 'noot', 'mies'],
-    currentRoute: null,
-    ref: null
+    routes: [],
+    currentRoute: null
   }
 }
 export const getters = {
@@ -17,28 +21,43 @@ export const getters = {
 }
 
 export const actions = {
-  initRoutes: async function ({ commit }) {
+  initRoutes: async function ({ state, commit, dispatch}) {
     const ref = await this.$app.$firebase.firestore().collection('routes')
     
-    // causes lots of read/writes for points... 
+    // causes lots of read/writes for routes... 
     ref.onSnapshot((snapShot) => {
       commit('setRoutes', [])
-      snapShot.forEach((poi) => {
-        const p = poi.data()
-        p.id = poi.id
-        commit('createRoute', p)
+      snapShot.forEach((route) => {
+        const r = route.data()
+        r.id = route.id
+        commit('createRoute', r)
       })
+      if(state.routes.length === 0) {
+        dispatch('createRoute', {})
+      }
     })
+  },
+  async createRoute ({ commit, state }, route) {
+    const ref = await this.$app.$firebase.firestore().collection('routes').doc()
+    const date = this.$app.$firebase.firestore.Timestamp.fromDate(new Date('1945-04-11'))
+    const newRoute = {
+      id: ref.id,
+      date: date,
+      title: route.title == null ? i18n.t('marker.title', { 'length': state.routes.length }) : route.title,
+      description: route.description == null ? i18n.t('marker.description', { 'length': state.routes.length }) : route.description
+    }
+
+    commit('createRoute', newRoute)
   },
 }
 export const mutations = {
-  async createRoute (state, { poi }) {
-    const ref = await this.$app.$firebase.firestore().collection('routes').doc()
-
-    console.log('create', ref)
+ createRoute (state,  route ) {
+    const newRoute = Object.assign({}, Schema, RouteSchema, route)
+    console.log('created route', newRoute)
+    state.routes.push(newRoute)
   },
   setCurrentRoute (state, val) {
-    // validate poi
+    // validate route
     console.log('setcurrent', val)
     state.currentRoute = val
   },
@@ -47,17 +66,6 @@ export const mutations = {
   }
 }
 
-export const Schema = {
-  id:'',
-  title: '',
-  description: '',
-  pois: [], // string
-  leadImage: '', // image for display
-  urls: [],
-  files:[], // {file: '', title: '', description: '', date: '', copyright: '', type:''}
-  author:'', // name of point creator
-  googleVoice: false // read aloud with google voice 
-}
 
 export default {
   state,
