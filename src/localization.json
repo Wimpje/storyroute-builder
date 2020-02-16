@@ -9,7 +9,12 @@
     },
     "routes": {
       "title":"Edit routes",
+      "addEdit": "Add/edit route",
       "choose": "choose route"
+    },
+    "route": {
+      "title": "Title",
+      "description": "Description"
     },
     "marker": {
       "description": "Description - {length}",
@@ -89,7 +94,12 @@
     "routes": {
       "selectRoute": "Selecteer een route",
       "title":"Bewerk routes",
+      "addEdit": "Add/edit route",
       "choose": "Kies route"
+    },
+    "route": {
+      "title": "Title",
+      "description": "Description"
     },
     "poi": {
       "title": "Titel",

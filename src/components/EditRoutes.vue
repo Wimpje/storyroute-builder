@@ -46,7 +46,7 @@
             />
             <v-text-field
               id="description"
-              :value="currentroute.description"
+              :value="currentRoute.description"
               :rules="someText"
               :label="$t('route.description')"
               required
@@ -55,7 +55,7 @@
             />
             
             <div
-              v-for="(url, index) in currentroute.urls"
+              v-for="(url, index) in currentRoute.urls"
               :key="`url${index}`"
             >
               <url-input
@@ -63,8 +63,8 @@
                 class="my-4"
                 :url.sync="url"
                 :index.sync="index"
-                @deleteUrl="deleteUrl"
-                @updateUrl="updateUrl"
+                @deleteUrl="deleteUrlFromRoute"
+                @updateUrl="updateUrlFromRoute"
               />
             </div>
             <v-btn
@@ -74,15 +74,15 @@
             </v-btn>
           
             <div
-              v-for="(file, index) in currentroute.files"
+              v-for="(file, index) in currentRoute.files"
               :key="`file${index}`"
             >
               <file-input
                 :file.sync="file"
                 :index.sync="index"
                 class="my-4"
-                @deleteFile="deleteFile"
-                @updateFile="updateFile"
+                @deleteFile="deleteFileFromRoute"
+                @updateFile="updateFileFromRoute"
               />     
             </div>
             <v-btn
@@ -92,7 +92,7 @@
             </v-btn>
             <v-checkbox
               id="convertToVoice"
-              :value="currentroute.convertToVoice"
+              :value="currentRoute.convertToVoice"
               :label="$t('marker.convertTextToVoice')"
               @input.native="updateRoute($event)"
             />
@@ -126,7 +126,7 @@
           <v-card-title class="headline">
             {{ this.$i18n.t('marker.deleteDialogTitle') }} 
           </v-card-title>
-          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title: currentroute.title}) }}</v-card-text>
+          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title: currentRoute.title}) }}</v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn
@@ -190,13 +190,13 @@ export default {
   },
   computed: {
     urlAddLabel() {
-      if(this.currentroute.urls && this.currentroute.urls.length > 0 )
+      if(this.currentRoute.urls && this.currentRoute.urls.length > 0 )
         return 'Add another url'
       else 
         return 'Add url'
     },
     fileAddLabel() {
-      if(this.currentroute.files && this.currentroute.files.length > 0 )
+      if(this.currentRoute.files && this.currentRoute.files.length > 0 )
           return 'Add another file'
       else 
         return 'Add file'
@@ -216,15 +216,11 @@ export default {
     
   },
   created() {
-    this.displayDate = this.date
   },
   methods: {
     ...mapActions(["addNewFileToRoute", "addNewUrlToRoute","deleteFileFromRoute", "deleteUrlFromRoute", "updateFileFromRoute", "updateUrlFromRoute"]),
     setDescription(description) {
       this.description = description;
-    },
-    setDate(date) {
-      this.date = date
     },
     updateRoute(e) {
       console.log('setting local route from form element', e)
@@ -237,17 +233,13 @@ export default {
     },
     save(e) {
       // merge objects
-      const updated = {
-        date: this.date
-      };
-
-      const newObject = Object.assign({}, this.currentRoute, updated, this.route)
+      const newObject = Object.assign({}, this.currentRoute, this.route)
       this.$store.dispatch("saveRoute", newObject);
     },
     reset() {
       this.key++
       this.$refs.routeForm.reset();
-      this.$store.dispatch("removeCurrentRoute");
+      this.$store.dispatch("removecurrentRoute");
       this.shouldDisplay = false;
     },
     resetValidation() {

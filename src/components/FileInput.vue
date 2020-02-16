@@ -49,10 +49,22 @@
         />
 
         <img
-          v-if="uploadEnd"
-          :src="firebaseUrl"
+          v-if="(uploadEnd || file.firebaseUrl) && type === 'image'"
+          :src="file.firebaseUrl"
           width="20%"
         >
+        <video 
+          v-if="(uploadEnd || file.firebaseUrl) && type === 'video'"
+          :src="file.firebaseUrl"
+          width="200"
+          controls
+        />
+        <audio
+          v-if="(uploadEnd || file.firebaseUrl) && type === 'audio'"
+          :src="file.firebaseUrl"
+          controls
+          width="200"
+        />
       </v-card-text>
       <v-card-actions>
         <v-row
@@ -168,6 +180,9 @@ export default {
         );
       }
     },
+  created() {
+    this.type = this.file.type
+  },
   methods: {
     deleteFile() {
       const that = this

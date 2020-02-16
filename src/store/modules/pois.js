@@ -118,9 +118,9 @@ export const actions = {
   },
   async savePoi ({ commit }, poi) {
     // if updated, save updated-date
-    if (!poi.currentDate) {
+    if (!poi.savedDate) {
       poi.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
-      if(poi.updateCnt)
+      if (poi.updateCnt != null)
         poi.updateCnt = poi.updateCnt++
       else
         poi.updateCnt = 1
@@ -128,7 +128,7 @@ export const actions = {
     const user = (this.$app.$store.state.auth || {}).user
     poi.author = user.email ? user.email : ''
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
-    await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, currentDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
+    await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
  
     commit('savePoi', poi)
     // TODO i18n

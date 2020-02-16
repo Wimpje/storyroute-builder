@@ -6,19 +6,30 @@
       name="route"
       item-text="title"
       :label="$t('routes.choose')"
-      @change.native="update($event)"
-    /> <v-btn
-      @click="createRoute"
-    >
-      <v-icon>mdi-new</v-icon>Add Route
-    </v-btn>
+      return-object
+      @change="update($event)"
+    />
+   
     <google-map
       :directions-result="directionsResult"
       @mapClicked="mapClicked"
       @markerClicked="markerClicked"
-    /> 
+    />
+    <div v-if="!showRoutes">
+      <v-text-field
+        id="title"
+        v-model="newTitle"
+        name="title"
+        :rules="someText"
+        :label="$t('route.title')"
+        required
+      />
+      <v-btn @click="createRoute">
+        <v-icon>mdi-new</v-icon>Add Route
+      </v-btn>
+    </div>
     <EditRoutes
-      v-if="showRoutes"
+      v-if="showRoutes" 
       :display.sync="showRoutes"
     />
   </div>
@@ -30,50 +41,61 @@ import EditRoutes from "@/components/EditRoutes.vue";
 import { mapActions, mapGetters } from "vuex";
 
 export default {
- components: {
+  components: {
     GoogleMap,
     EditRoutes
   },
-   data() {
+  data() {
     return {
       showRoutes: false,
-      directionsResult: {}
-    }
-  },
-   watch: {
-    currentRoute: function(oldRoute, newRoute) {
-      if (newRoute != null) {
-        this.showRoutes = true
-      }
-    }
+      newTitle: '',
+      directionsResult: {},
+      someText: [
+        v => !!v || this.$i18n.t("validation.someTextRequired"),
+        v => (v && v.length > 1) || this.$i18n.t("validation.atLeastChars", 1)
+      ],
+    };
   },
   computed: {
     ...mapGetters({
-      routes: "getRoutes"
+      routes: "getRoutes",
+      currentRoute: "currentRoute"
     })
   },
+  watch: {
+    currentRoute: function(oldRoute, newRoute) {
+      console.log("currentRouteChanged")
+      this.showRoutes = true
+      this.newTitle = ''
+    }
+  },
   created() {
-    this.$store.dispatch('initPois')
-    this.$store.dispatch('initRoutes')
+    this.$store.dispatch("initPois")
+    this.$store.dispatch("initRoutes")
   },
   methods: {
     //...mapActions(['createRoute']),
-    createRoute (event) {
-      const route = {}
-      this.$store.dispatch("createRoute", route);
-
+    createRoute(event) {
+      const route = {
+        title: this.newTitle
+      }
+      this.$store.dispatch("createRoute", route)
+      this.$store.commit('setCurrentRoute', route)
     },
-    markerClicked (mapClickEvent) {
-      this.showRoutes = true
+    update(route) {
+      this.$store.commit('setCurrentRoute', route)
+    },
+    markerClicked(mapClickEvent) {
+      if (this.currentRoute)
+        this.showRoutes = true;
     },
     mapClicked() {
-      this.showRoutes = true
+      if (this.currentRoute)
+        this.showRoutes = true;
     }
-
   }
-}
+};
 </script>
 
 <style>
-
 </style>
