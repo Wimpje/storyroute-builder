@@ -64,7 +64,7 @@ export const actions = {
     // TODO i18n
     commit('setMessage', {title: 'Route Saved', message:`The route ${route.title} has been saved`})
   },
-
+ 
   addNewFileToRoute({commit}) {
     commit('addNewFileToRoute', Object.assign({}, FileSchema))
    },
@@ -128,6 +128,10 @@ export const mutations = {
   updateFileFromRoute(state, payload) {
     console.log('MUTATION: updating file', payload)
     state.currentRoute.files[payload.index] = Object.assign({}, state.currentRoute.files[payload.index], payload.val)
+  },
+  updateCurrentRoutePois(state, payload) {
+    console.log('MUTATION - updateCurrentRoute pois order', payload)
+    // state.currentPoi.pois = payload
   },
 }
 

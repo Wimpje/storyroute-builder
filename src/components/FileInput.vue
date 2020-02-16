@@ -192,7 +192,7 @@ export default {
         return
       }
 
-      let image = this.$firebase.storage().refFromURL(this.firebaseUrl);
+      let image = this.$firebase.storage().refFromURL(this.file.firebaseUrl);
       //let image = new Promise(function(resolve, reject){console.log('hi')})
       this.deleting = true
       image.delete().then(function() {

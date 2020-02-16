@@ -9,12 +9,33 @@
       return-object
       @change="update($event)"
     />
-   
-    <google-map
-      :directions-result="directionsResult"
-      @mapClicked="mapClicked"
-      @markerClicked="markerClicked"
-    />
+    <v-layout row>
+      <v-flex
+        grow
+        pa-1
+      >
+        <google-map
+          :directions-result="directionsResult"
+          @mapClicked="mapClicked"
+          @markerClicked="markerClicked"
+        />
+      </v-flex>
+      <v-flex
+        shrink
+        pa-1
+      >
+        <v-card
+          outline
+        >
+          <v-card-title class="headline">
+            Drag the points in order
+          </v-card-title>
+          <v-card-text>
+            <draggable v-model="pois" />
+          </v-card-text>
+        </v-card>
+      </v-flex>
+    </v-layout>
     <div v-if="!showRoutes">
       <v-text-field
         id="title"
@@ -39,11 +60,13 @@
 import GoogleMap from "@/components/GoogleMap.vue";
 import EditRoutes from "@/components/EditRoutes.vue";
 import { mapActions, mapGetters } from "vuex";
+  import draggable from 'vuedraggable'
 
 export default {
   components: {
     GoogleMap,
-    EditRoutes
+    EditRoutes,
+    draggable
   },
   data() {
     return {
@@ -60,7 +83,15 @@ export default {
     ...mapGetters({
       routes: "getRoutes",
       currentRoute: "currentRoute"
-    })
+    }),
+    pois: {
+        get() {
+            return this.$store.currentRoutes.pois
+        },
+        set(value) {
+            this.$store.commit('updateCurrentRoutePois', value)
+        }
+    }
   },
   watch: {
     currentRoute: function(oldRoute, newRoute) {
@@ -88,6 +119,8 @@ export default {
     markerClicked(mapClickEvent) {
       if (this.currentRoute)
         this.showRoutes = true;
+  debugger
+      //this.$store.commit('addPoiToRoute', mapClickEvent)
     },
     mapClicked() {
       if (this.currentRoute)
