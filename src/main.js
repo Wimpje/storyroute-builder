@@ -36,6 +36,7 @@ Vue.use(VueGoogleMaps, {
 })
 
 Vue.use(firebase)
+Vue.config.devtools = true
 
 
 // only load app when user state is determined (logged in / not logged in)
@@ -56,6 +57,5 @@ firebase.auth().onAuthStateChanged(user => {
     store.$app = app;
     app.$mount('#app')
   }
-  Vue.config.devtools = true
   
 });

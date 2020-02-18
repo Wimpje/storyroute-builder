@@ -29,7 +29,7 @@ export default {
   },
   created() {
     this.$store.dispatch("initPois");
-    
+    this.$store.commit('setMapShowAutocomplete', true)
   },
   computed: {
     ...mapGetters({
@@ -50,7 +50,7 @@ export default {
       );
       const poi = { title: "New from map " + this.pois.length, position };
       this.$store.dispatch("createPoi", poi);
-      this.$store.commit("setCurrentPoi", poi);
+      
       // open edit dialog
       this.markerEditDialog = true
    

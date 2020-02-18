@@ -46,6 +46,7 @@
             :key="index"
             :position="toLatLngObject(item.position)"
             :draggable="true"
+            :label="computePoiLabel(item)"
             @dragend="updateMarkerLatLng"
             @dragstart="setMarkerToCurrent(item)"
             @click="markerClicked(item, index)"
@@ -64,6 +65,36 @@
             </div>
           </div>
         </gmap-map>
+        <v-dialog
+          v-if="currentPoi"
+          v-model="moveConfirmDialog"
+          persistent
+          max-width="290"
+        >
+          <v-card>
+            <v-card-title class="headline">
+              {{ this.$i18n.t('marker.moveConfirm') }} 
+            </v-card-title>
+            <v-card-text>{{ this.$i18n.t('marker.moveConfirmText', {title: currentPoi.title}) }}</v-card-text>
+            <v-card-actions>
+              <v-spacer />
+              <v-btn
+                color="green darken-1"
+                text
+                @click="moveConfirmed()"
+              >
+                Move
+              </v-btn>
+              <v-btn
+                color="green darken-1"
+                text
+                @click="moveCanceled()"
+              >
+                Cancel
+              </v-btn>
+            </v-card-actions>
+          </v-card>
+        </v-dialog>
       </v-col>
     </v-row>
   </v-container>
@@ -91,18 +122,46 @@ export default {
       markerHovered: null,
       dataLoaded: false,
       hasDirectionsResult: false,
-      hasPoints: false
+      hasPoints: false,
+      moveConfirmDialog: false,
+      tempNewPoi: {} // for drag/drop confirmation
     };
   },
 
   computed: {
-    ...mapGetters({zoom: "mapZoom", center: "mapCenter", showAutoComplete: "mapShowAutocomplete", pois:  "getPois"}),
+    ...mapGetters({zoom: "mapZoom", center: "mapCenter", showAutoComplete: "mapShowAutocomplete", pois: "getPois"}),
     currentPoi: {
       get() {
         return this.$store.state.pois.currentPoi;
       },
       set(value) {
         this.$store.commit("setCurrentPoi", value);
+      }
+    },
+    
+    poisWrong: {
+      get() {
+        const pois = Array.from(this.$store.state.pois.pois)
+        let ret = []
+        if (this.$store.state.routes.currentRoute && this.$store.state.routes.currentRoute.pois && this.$store.state.routes.currentRoute.pois.length) {
+          for (let i = 0; i < this.$store.state.routes.currentRoute.pois.length; i++) {
+            const routePoi = this.$store.state.routes.currentRoute.pois[i];
+            pois.forEach(p => {
+              if(p.label) return
+              if(p.id === routePoi.id) {
+                p.label = 'R'
+              }
+              else {
+                p.label = p.saved ? {text:'✓', backgroundColor:'blue'} : {text:'╳'}
+              }
+            })
+          }
+        }
+        else {
+          pois.forEach(p => p.label = p.saved ? {text:'✓', backgroundColor:'blue'} : {text:'╳'})
+        }
+        
+        return pois
       }
     },
      autocompleteOptions: {
@@ -123,6 +182,18 @@ export default {
     console.log("map created");
   },
   methods: {
+    computePoiLabel(poi) {
+      if (this.$store.state.routes.currentRoute && this.$store.state.routes.currentRoute.pois && this.$store.state.routes.currentRoute.pois.length) {
+        const idx = this.$store.state.routes.currentRoute.pois.findIndex(p => p.id === poi.id) 
+        if(idx > -1)
+          return {text:idx + 1 +'', backgroundColor:'blue'}
+        else
+          return poi.saved ? {text:'✓', backgroundColor:'blue'} : {text:'╳'}
+      }
+      else {
+        return poi.saved ? {text:'✓', backgroundColor:'blue'} : {text:'╳'}
+      }
+    },
     setMarkerToCurrent(poi) {
       this.$store.commit("setCurrentPoi", poi);
     },
@@ -133,8 +204,10 @@ export default {
       )
       const poi = { position };
 
-      const newPoi = Object.assign( {}, this.currentPoi, poi )
-      this.$store.dispatch("savePoi", newPoi);
+      // open confirmation dialog
+      this.moveConfirmDialog = true
+      this.tempNewPoi = Object.assign( {}, this.currentPoi, poi )
+      
     },
     toLatLngObject: poi => {
       const isNumber = value => {
@@ -173,6 +246,15 @@ export default {
 
       this.$emit('markerClicked', marker)
       console.log('marker clicked', marker, this)
+    },
+    moveConfirmed() {
+      this.$store.dispatch("savePoi", this.tempNewPoi);
+      this.tempNewPoi = {}
+      this.moveConfirmDialog = false
+    },
+    moveCanceled() {
+      this.tempNewPoi = {}
+      this.moveConfirmDialog = false
     },
     setPlace(place) {
       if (!place) {

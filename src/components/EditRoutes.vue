@@ -208,6 +208,7 @@ export default {
       },
       set(value) {
         this.$emit("update:display", value);
+        this.$emit("setCurrentRouteToNone", true);
       }
     },
     ...mapGetters(["currentRoute"]),
@@ -239,7 +240,7 @@ export default {
     reset() {
       this.key++
       this.$refs.routeForm.reset();
-      this.$store.dispatch("removecurrentRoute");
+      this.$store.dispatch("removeCurrentRoute");
       this.shouldDisplay = false;
     },
     resetValidation() {

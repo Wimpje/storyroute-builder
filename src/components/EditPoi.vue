@@ -55,7 +55,7 @@
             />
             <v-combobox
               id="tags"
-              :items="currentPoi.tags"
+              :items="tags"
               :search-input.sync="tagSearch"
               hide-selected
               :hint="$t('poi.tagsHint')"
@@ -232,7 +232,6 @@ export default {
       lazy: true,
       showDatePicker: false,
       tagSearch: null,
-      tags: [],
       // the poi currently edited, and which will be saved when done.
       poi: {},
       deleteConfirmDialog:false,
@@ -256,8 +255,18 @@ export default {
           return 'Add another file'
       else 
         return 'Add file'
-    }
-    ,
+    },
+    tags: {
+      get() {
+        if (this.$store.state.routes.currentPoi && this.$store.state.routes.currentPoi.tags.length)
+          return this.$store.state.routes.currentPoi.tags
+        else 
+          return []
+      },
+      set(value) {
+        this.$store.commit('addTagToPoi', value)
+      }
+    },
     shouldDisplay: {
       get() {
         return this.display;

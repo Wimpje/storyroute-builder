@@ -42,7 +42,8 @@ export const UrlSchema = {
 export const Schema = {
   id:'',
   title: '',
-  description: '',tags: [], // string
+  description: '',
+  tags: [], // array of strings
   date: '', // firestore.Timestamp
   leadImage: '', // image for display
   urls: [],
@@ -76,6 +77,9 @@ export const actions = {
   addNewUrlToPoi({commit}) {
    commit('addNewUrlToPoi', Object.assign({}, UrlSchema))
   },
+  addTagToPoi({commit}, payload) {
+    commit('addTagToPoi', payload)
+   },
   deleteFileFromPoi({commit}, payload){
     commit('deleteFileFromPoi', payload)
   },
@@ -115,6 +119,7 @@ export const actions = {
     }
 
     commit('createPoi', newPoi)
+    commit("setCurrentPoi", newPoi);
   },
   async savePoi ({ commit }, poi) {
     // if updated, save updated-date
@@ -128,15 +133,20 @@ export const actions = {
     const user = (this.$app.$store.state.auth || {}).user
     poi.author = user.email ? user.email : ''
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
-    await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
- 
-    commit('savePoi', poi)
-    // TODO i18n
-    commit('setMessage', {title: 'Point Saved', message:`The point ${poi.title} has been saved`})
+    try {
+      await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
+      commit('savePoi', poi)
+      // TODO i18n
+      commit('setMessage', {title: 'Point Saved', message:`The point ${poi.title} has been saved`})  
+    }
+    catch (e) {
+      commit('setMessage', {title: 'ERROR saving point', message:`The point was not save: ${e.message}`})  
+    }
   },
   saveCurrentPoi ({ dispatch, state }) {
     dispatch('savePoi', state.currentPoi)
   },
+  
   async removeCurrentPoi ({ commit, state }) {
     if (state.currentPoi === null) { return }
     const poi = state.currentPoi
@@ -182,6 +192,10 @@ export const mutations = {
   updateFileFromPoi(state, payload) {
     console.log('MUTATION: updating file', payload)
     state.currentPoi.files[payload.index] = Object.assign({}, state.currentPoi.files[payload.index], payload.val)
+  },
+  addTagToPoi(state, payload) {
+    console.log('MUTATION: updating tags', payload)
+    state.currentPoi.tags.push(payload)
   },
   savePoi (state, { poi }) {
     console.log('empty save poi function', poi)

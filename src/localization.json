@@ -10,7 +10,9 @@
     "routes": {
       "title":"Edit routes",
       "addEdit": "Add/edit route",
-      "choose": "choose route"
+      "choose": "choose route",
+      "order": "drag in correct route order",
+      "save": "Save"
     },
     "route": {
       "title": "Title",
@@ -27,7 +29,9 @@
       "changeLocation": "change location",
       "save": "save",
       "cancel": "cancel",
-      "convertTextToVoice": "Convert description to (google) voice"
+      "convertTextToVoice": "Convert description to (google) voice",
+      "moveConfirm":"Move?",
+      "moveConfirmText": "Do you want to move to point? "
     },
     "poi": {
       "title": "Title",
@@ -89,13 +93,17 @@
       "changeLocation": "verplaats",
       "save": "opslaan",
       "cancel": "annuleren",
-      "convertTextToVoice": "Converteer beschrijving naar Google Voice bestand"
+      "convertTextToVoice": "Converteer beschrijving naar Google Voice bestand",
+      "moveConfirm":"Verplaats?",
+      "moveConfirmText": "Wil je het punt verplaatsen?"
     },
     "routes": {
       "selectRoute": "Selecteer een route",
       "title":"Bewerk routes",
       "addEdit": "Add/edit route",
-      "choose": "Kies route"
+      "choose": "Kies route",
+      "order": "Sleep in de juiste volgorde",
+      "save": "Save"
     },
     "route": {
       "title": "Title",
