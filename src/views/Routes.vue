@@ -70,7 +70,7 @@
               </draggable>
             </v-list>
             <v-btn
-              v-if="orderChanged"
+              v-if="showPoiSaveButton"
               right
               @click="save()"
             >
@@ -124,7 +124,7 @@ export default {
       ],
       isDragging: false,
       delayedDragging: false,
-      orderChanged: false
+      showPoiSaveButton: false
     }
   },
   computed: {
@@ -143,7 +143,7 @@ export default {
           return ret
       },
       set(value) {
-        this.orderChanged = true
+        this.showPoiSaveButton = true
         this.$store.commit('updateCurrentRoutePois', value)
       }
     },
@@ -164,7 +164,7 @@ export default {
     currentRoute: function() {
       console.log("currentRouteChanged")
       this.newTitle = ''
-      this.orderChanged = false
+      this.showPoiSaveButton = false
 
       if (this.currentRoute) {
         this.showRoutes = true
@@ -208,6 +208,7 @@ export default {
         this.showRoutes = true;
    
       this.$store.commit('addPoiToRoute', poi)
+      this.showPoiSaveButton = true
     },
     mapClicked() {
       if (this.currentRoute)
@@ -215,7 +216,7 @@ export default {
     },
     save() {
       this.$store.dispatch("saveRoute", this.currentRoute);
-      this.orderChanged = false
+      this.showPoiSaveButton = false
     },
     onMove({ relatedContext, draggedContext }) {
       const relatedElement = relatedContext.element;

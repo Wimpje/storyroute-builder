@@ -186,13 +186,15 @@ export default {
   methods: {
     deleteFile() {
       const that = this
-      if(!this.file.firebaseUrl) {
+      const firebaseUrl = this.file.firebaseUrl || (this.localFile && this.localFile.firebaseUrl)
+      if(!firebaseUrl) {
         that.$emit("deleteFile", {index: that.index, file: that.file});
-        console.log('deleting without contacting firesbase (no firebaseUrl found')
+        console.log('deleting without contacting firebase (no firebaseUrl found')
+        that.deleting = false
         return
       }
 
-      let image = this.$firebase.storage().refFromURL(this.file.firebaseUrl);
+      let image = this.$firebase.storage().refFromURL(firebaseUrl);
       //let image = new Promise(function(resolve, reject){console.log('hi')})
       this.deleting = true
       image.delete().then(function() {
