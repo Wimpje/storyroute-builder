@@ -184,8 +184,6 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch("initPois")
-    this.$store.dispatch("initRoutes")
     this.$store.commit('setMapShowAutocomplete', false)
     // ? this.$store.commit('setCurrentRouteToNone')
   },

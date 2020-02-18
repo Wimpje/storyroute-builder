@@ -114,6 +114,9 @@ export default {
         state.toastShow  = typeof state.toastMessage !== 'undefined' && state.toastMessage != null && state.toastMessage.length > 0
       }
     })
+    // get stuff from firebase once, it is 'active' (onsnapshot promise)
+    this.$store.dispatch("initPois")
+    this.$store.dispatch("initRoutes")
   }
 };
 </script>

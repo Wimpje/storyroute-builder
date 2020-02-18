@@ -28,7 +28,6 @@ export default {
     }
   },
   created() {
-    this.$store.dispatch("initPois");
     this.$store.commit('setMapShowAutocomplete', true)
   },
   computed: {
