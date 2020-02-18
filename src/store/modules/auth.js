@@ -50,7 +50,7 @@ export const actions = {
   },
   // eslint-disable-next-line object-shorthand
   googleSignIn: async function ({ commit }) {
-    const result = await this.$app.$firebase.auth().signInWithPopup(this.$app.$firebase.auth.GoogleAuthProvider())
+    const result = await this.$app.$firebase.auth().signInWithPopup(new this.$app.$firebase.auth.GoogleAuthProvider())
     try {
       const user = createUserFromGoogleResponse(result)
       const token = result.credential.accessToken
@@ -63,14 +63,17 @@ export const actions = {
   },
   // eslint-disable-next-line object-shorthand
   googleSignOut: async function ({ commit }, payload) {
-    await this.$app.$firebase.auth.signOut()
+    
     try {
+      await this.$app.$firebase.auth().signOut()
       // Removes user from Store
       commit('clearUser')
       window.$cookies.remove('Authorization')
       window.$cookies.remove('user')
       console.log('Logout Successful')
     } catch (error) {
+      window.$cookies.remove('Authorization')
+      window.$cookies.remove('user')
       console.log('Logout error', error)
     }
   }
