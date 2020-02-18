@@ -46,7 +46,9 @@
                     v-for="(poi, idx) in pois"
                     :key="poi.id"
                   >
-                    <v-list-item>
+                    <v-list-item
+                      @click="centerToPoi(poi)"
+                    >
                       {{ idx + 1 }} - {{ poi.title }}
                       <v-btn
                         icon
@@ -194,6 +196,12 @@ export default {
         title: this.newTitle
       }
       this.$store.dispatch("createRoute", route)
+    },
+    centerToPoi(poi) {
+
+    },
+    hoverPoi(poi) {
+      
     },
     markerClicked(poi) {
       if (this.currentRoute)

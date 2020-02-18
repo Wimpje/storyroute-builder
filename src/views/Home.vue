@@ -1,6 +1,8 @@
 <template>
   <div>
-    Heyda
+    <h1>              {{ this.$i18n.t('welcome') }}</h1>
+    <p><a href="/login">Log in</a> als u dat nog niet heeft gedaan</p>
+    <p>In het menu kunt u kiezen of u een punt wilt toevoegen/bewerken, of dat u een route wilt toevoegen/bewerken</p>
   </div>
 </template>
 

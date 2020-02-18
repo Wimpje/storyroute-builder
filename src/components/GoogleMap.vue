@@ -234,7 +234,8 @@ export default {
       const lng = mapClickEvent.latLng.lng()
 
       this.$refs.mapRef.$mapPromise.then((map) => {
-        map.panTo({lat, lng})
+        // a bit annoying, user can do it themselves
+        // map.panTo({lat, lng})
       })
       this.$emit('mapClicked', mapClickEvent)
     },

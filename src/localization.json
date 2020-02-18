@@ -100,14 +100,14 @@
     "routes": {
       "selectRoute": "Selecteer een route",
       "title":"Bewerk routes",
-      "addEdit": "Add/edit route",
+      "addEdit": "Bewerk route",
       "choose": "Kies route",
       "order": "Sleep in de juiste volgorde",
-      "save": "Save"
+      "save": "Opslaan"
     },
     "route": {
-      "title": "Title",
-      "description": "Description"
+      "title": "Titel",
+      "description": "Beschrijving"
     },
     "poi": {
       "title": "Titel",
@@ -117,7 +117,7 @@
       "url": "Website / link",
       "urlTitle": "Titel",
       "urlDescription": "Beschrijving",
-      "tagsHint": "Fill in tags"
+      "tagsHint": "Voeg tags toe"
     },
     "content": {
       "type": "Inhoud type",
