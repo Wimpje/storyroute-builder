@@ -107,7 +107,6 @@ export default {
   },
   data() {
     return {
-      type:'other',
       progressUpload: 0,
       fileName: "",
       uploadTask: "",
@@ -115,10 +114,12 @@ export default {
       uploadEnd: false,
       firebaseUrl: "",
       localFile: {},
-      deleting: false
+      deleting: false,
+      type: 'other'
     };
   },
   computed: {
+    
     value() {
       return this.file.file ? this.file.file : "file.ext";
     },
@@ -158,6 +159,11 @@ export default {
     }
   },
   watch: {
+      file: function(oldFile, newFile) {
+        if(newFile) {
+          this.type = newFile.type
+        }
+      },
       uploadTask: function() {
         this.uploadTask.on(
           "state_changed",
@@ -180,9 +186,6 @@ export default {
         );
       }
     },
-  created() {
-    this.type = this.file.type
-  },
   methods: {
     deleteFile() {
       const that = this
@@ -202,8 +205,14 @@ export default {
         that.$emit("deleteFile", {index: that.index, file: that.file});
         that.deleting = false
       }).catch(function(error) {
-        that.$store.commit('setMessage', {title: 'Error', message: error, duration: 15000}, { root: true })
         console.log('an error occurred', error);
+        if(error.code === "storage/object-not-found") {
+          // go ahead, the image was not there
+          console.log("still removing it, file was not there")
+          that.$emit("deleteFile", {index: that.index, file: that.file});
+        } else {
+          that.$store.commit('setMessage', {title: 'Error', message: error, duration: 15000}, { root: true })
+        }
         that.deleting = false
       });
       

@@ -190,6 +190,12 @@ export default {
         else
           return poi.saved ? {text:'✓', backgroundColor:'blue'} : {text:'╳'}
       }
+      else if (this.$store.state.pois.currentPoi && poi.id === this.$store.state.pois.currentPoi.id){
+        if(poi.saved) 
+          return {text:'⨀', backgroundColor:'blue'}
+        else 
+          return {text:'⨂', backgroundColor:'blue'}
+      }      
       else {
         return poi.saved ? {text:'✓', backgroundColor:'blue'} : {text:'╳'}
       }

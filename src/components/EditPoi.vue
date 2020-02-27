@@ -21,7 +21,7 @@
         
         <v-btn
           icon
-          @click="shouldDisplay = false"
+          @click="close()"
         >
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -44,8 +44,10 @@
               required
               @input.native="updatePoi($event);"
             />
-            <v-text-field
+            <v-textarea
               id="description"
+              auto-grow
+              outlined
               :value="currentPoi.description"
               :rules="someText"
               :label="$t('poi.description')"
@@ -55,7 +57,8 @@
             />
             <v-combobox
               id="tags"
-              :items="tags"
+              v-model="tags"
+              :items="allTags"
               :search-input.sync="tagSearch"
               hide-selected
               :hint="$t('poi.tagsHint')"
@@ -90,7 +93,7 @@
               <template v-slot:activator="{ on }">
                 <v-text-field
                   id="date"
-                  :value="displayDate"
+                  v-model="displayDate"
                   :label="$t('poi.date')"
                   prepend-icon="mdi-calendar"
                   readonly
@@ -102,7 +105,7 @@
                 :picker-date="picker.date"
                 :min="picker.min"
                 :max="picker.max"
-                @input="showDatePicker = false"
+                @input="updateDate($event);showDatePicker = false"
               />
             </v-menu>
             <div
@@ -141,11 +144,10 @@
             >
               {{ fileAddLabel }}
             </v-btn>
-            <v-checkbox
+            <v-switch
               id="convertToVoice"
-              :value="currentPoi.convertToVoice"
+              v-model="convertToVoice"
               :label="$t('marker.convertTextToVoice')"
-              @input.native="updatePoi($event)"
             />
           </v-card-text>
         
@@ -159,7 +161,7 @@
             </v-btn>
             <v-btn
               class="mr-4"
-              @click="shouldDisplay = false"
+              @click="close()"
             >
               {{ this.$i18n.t('marker.cancel') }}
             </v-btn>
@@ -222,6 +224,7 @@ export default {
   data() {
     return {
       key: 1,
+      date: '',
       valid: true,
       title: "",
       someText: [
@@ -243,6 +246,17 @@ export default {
       }
     };
   },
+  watch: {
+    currentPoi: function() {
+      this.resetForm();
+      if(this.currentPoi.date && typeof this.currentPoi.date !== 'string' && 'toDate' in this.currentPoi.date) {
+        this.displayDate = this.currentPoi.date.toDate()
+            .toISOString()
+            .slice(0, 10);
+          console.log(`converted currentPoiDate ${this.currentPoi.date.toDate()} to date ${this.displayDate}`)
+      }
+    }
+  },
   computed: {
     urlAddLabel() {
       if(this.currentPoi.urls && this.currentPoi.urls.length > 0 )
@@ -256,15 +270,36 @@ export default {
       else 
         return 'Add file'
     },
+    allTags() {
+      return ["Joden", "Canadezen", "Duitsers", "Bijzonder"]
+    },
     tags: {
       get() {
-        if (this.$store.state.routes.currentPoi && this.$store.state.routes.currentPoi.tags.length)
-          return this.$store.state.routes.currentPoi.tags
+        if (this.$store.state.pois.currentPoi && this.$store.state.pois.currentPoi.tags && this.$store.state.pois.currentPoi.tags.length)
+          return this.$store.state.pois.currentPoi.tags
         else 
           return []
       },
+      set (value) {
+        if (this.poi) {
+          if(value && value.length > 0)
+            this.$set(this.poi, "tags", value);
+          else
+            this.$set(this.poi, "tags", []);
+        }
+      }
+    },
+    
+    convertToVoice: {
+      get() {
+        return this.currentPoi.convertToVoice
+      },
       set(value) {
-        this.$store.commit('addTagToPoi', value)
+        if (this.poi) {
+          if(typeof value !== 'undefined') {
+            this.$set(this.poi, "convertToVoice", value);
+          }
+        }
       }
     },
     shouldDisplay: {
@@ -278,45 +313,21 @@ export default {
     ...mapGetters(["currentPoi"]),
     google: gmapApi,
     // eslint-disable-next-line object-shorthand
-    date: {
-      get: function() {
-        // this is not 100% perfect, but since we're not messing with timezones it'll do the trick
-        if (this.poi && this.poi.date) {
-          const date = this.poi.date
-            .toDate()
-            .toISOString()
-            .slice(0, 10);
-            console.log('converted to date', date)
-            return date
-        } else {
-          console.warn('using default date of 11 april 1945')
-          return "1945-04-11";
-        }
-      },
-      // eslint-disable-next-line object-shorthand
-      set: function(date) {
-        console.log('setting date to  date', date)
-        this.poi.date = this.$firebase.firestore.Timestamp.fromDate(new Date(date))
-        this.displayDate = date
-        //this.$set(this.poi, 'date', this.$firebase.firestore.Timestamp.fromDate(new Date(date)));
-
-      }
-    }
   },
   created() {
-    this.displayDate = this.date
+    console.log("Created")
   },
   methods: {
     ...mapActions(["addNewFileToPoi","addNewUrlToPoi","deleteFileFromPoi", "deleteUrlFromPoi", "updateFileFromPoi", "updateUrlFromPoi"]),
-    setDescription(description) {
-      this.description = description;
-    },
-    setDate(date) {
-      this.date = date
-    },
     updatePoi(e) {
       console.log('setting local poi from form element', e)
       this.$set(this.poi, e.target.id, e.target.value);
+    },
+    updateDate(date) {
+      const convertedDate = this.$firebase.firestore.Timestamp.fromDate(new Date(date))
+      console.log(`setting date ${date} to ${convertedDate}`)
+      this.$set(this.poi, "date", convertedDate);
+      this.displayDate = date
     },
     validate() {
       if (this.$refs.form.validate()) {
@@ -332,15 +343,25 @@ export default {
       const newPoi = Object.assign( {}, this.currentPoi, updatedPoi, this.poi)
       this.$store.dispatch("savePoi", newPoi);
     },
-    reset() {
+    resetForm() {
       this.key++
       this.$refs.poiForm.reset();
+      this.date = ''
+      this.poi = {};
+    },
+    reset() {
+      this.resetForm()
       this.$store.dispatch("removeCurrentPoi");
       this.shouldDisplay = false;
     },
     resetValidation() {
       this.$refs.poiForm.resetValidation();
+    },
+    close() {
+      this.shouldDisplay = false
+      this.resetForm()
     }
+
   }
 };
 </script>

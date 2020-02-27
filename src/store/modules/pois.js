@@ -9,10 +9,10 @@ export const state = () => {
   }
 }
 export const getters = {
-  currentPoi (state) {
+  currentPoi(state) {
     return state.currentPoi
   },
-  getPois (state) {
+  getPois(state) {
     return state.pois
   }
 }
@@ -22,33 +22,33 @@ export const ContentTypes = [
 ]
 
 export const FileSchema = {
-  file: '', 
-  title: '', 
-  description: '', 
-  date: '', 
-  copyright: '', 
+  file: '',
+  title: '',
+  description: '',
+  date: '',
+  copyright: '',
   firebaseUrl: '',
   type: 'other', // one of ContentTypes
   lead: false // use by default if set
 }
 
 export const UrlSchema = {
-  url: '', 
-  title: '', 
+  url: '',
+  title: '',
   description: '',
   type: 'other' // one of ContentTypes
 }
 
 export const Schema = {
-  id:'',
+  id: '',
   title: '',
   description: '',
   tags: [], // array of strings
   date: '', // firestore.Timestamp
   leadImage: '', // image for display
   urls: [],
-  files:[], // {file: '', title: '', description: '', date: '', copyright: '', type:''}
-  author:'', // name of point creator
+  files: [], // {file: '', title: '', description: '', date: '', copyright: '', type:''}
+  author: '', // name of point creator
   convertToVoice: false // read aloud with google voice 
 }
 const PoiSchema = {
@@ -58,7 +58,7 @@ const PoiSchema = {
 
 
 export const actions = {
-   initPois: async function ({ commit }) {
+  initPois: async function ({ commit }) {
     const ref = await this.$app.$firebase.firestore().collection('pois')
     // TODO not efficient! Think about this (it does make collaborative editing sort of possible...)
     // causes lots of read/writes for points... 
@@ -71,31 +71,31 @@ export const actions = {
       })
     })
   },
-  addNewFileToPoi({commit}) {
-   commit('addNewFileToPoi', Object.assign({}, FileSchema))
+  addNewFileToPoi({ commit }) {
+    commit('addNewFileToPoi', Object.assign({}, FileSchema))
   },
-  addNewUrlToPoi({commit}) {
-   commit('addNewUrlToPoi', Object.assign({}, UrlSchema))
+  addNewUrlToPoi({ commit }) {
+    commit('addNewUrlToPoi', Object.assign({}, UrlSchema))
   },
-  addTagToPoi({commit}, payload) {
+  addTagToPoi({ commit }, payload) {
     commit('addTagToPoi', payload)
-   },
-  deleteFileFromPoi({commit}, payload){
+  },
+  deleteFileFromPoi({ commit }, payload) {
     commit('deleteFileFromPoi', payload)
   },
-  deleteUrlFromPoi({commit}, payload){
+  deleteUrlFromPoi({ commit }, payload) {
     commit('deleteUrlFromPoi', payload)
-  }, 
-  updateUrlFromPoi({commit}, payload){
+  },
+  updateUrlFromPoi({ commit }, payload) {
     commit('updateUrlFromPoi', payload)
   },
-  updateFileFromPoi({commit}, payload){
+  updateFileFromPoi({ commit }, payload) {
     commit('updateFileFromPoi', payload)
   },
-  getPois ({ state }) {
+  getPois({ state }) {
     return state.pois
   },
-  async getPoiTags ({ state }) {
+  async getPoiTags({ state }) {
     if (state.tags.length) {
       const tagsRef = await this.$app.$firebase.firestore().collection('tags').doc('SJIGrgJX3Vto0lWOPzLo')
       console.log(tagsRef)
@@ -107,7 +107,7 @@ export const actions = {
     }
     return state.tags
   },
-  async createPoi ({ commit, state }, poi) {
+  async createPoi({ commit, state }, poi) {
     const ref = await this.$app.$firebase.firestore().collection('pois').doc()
     const date = this.$app.$firebase.firestore.Timestamp.fromDate(new Date('1945-04-11'))
     const newPoi = {
@@ -121,7 +121,7 @@ export const actions = {
     commit('createPoi', newPoi)
     commit("setCurrentPoi", newPoi);
   },
-  async savePoi ({ commit }, poi) {
+  async savePoi({ commit }, poi) {
     // if updated, save updated-date
     if (!poi.savedDate) {
       poi.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
@@ -130,24 +130,27 @@ export const actions = {
       else
         poi.updateCnt = 1
     }
+    else {
+      poi.savedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp() 
+    }
     const user = (this.$app.$store.state.auth || {}).user
     poi.author = user.email ? user.email : ''
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
     try {
-      await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
+      await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true})
       commit('savePoi', poi)
       // TODO i18n
-      commit('setMessage', {title: 'Point Saved', message:`The point ${poi.title} has been saved`})  
+      commit('setMessage', { title: 'Point Saved', message: `The point ${poi.title} has been saved` })
     }
     catch (e) {
-      commit('setMessage', {title: 'ERROR saving point', message:`The point was not save: ${e.message}`})  
+      commit('setMessage', { title: 'ERROR saving point', message: `The point was not save: ${e.message}` })
     }
   },
-  saveCurrentPoi ({ dispatch, state }) {
+  saveCurrentPoi({ dispatch, state }) {
     dispatch('savePoi', state.currentPoi)
   },
-  
-  async removeCurrentPoi ({ commit, state }) {
+
+  async removeCurrentPoi({ commit, state }) {
     if (state.currentPoi === null) { return }
     const poi = state.currentPoi
     if (state.currentPoi.saved) {
@@ -160,21 +163,21 @@ export const actions = {
 }
 
 export const mutations = {
-  createPoi (state, poi) {
+  createPoi(state, poi) {
     const newPoi = Object.assign({}, Schema, PoiSchema, poi)
-    console.log('created poi', newPoi)
+    console.log('created poi', newPoi.title)
     state.pois.push(newPoi)
   },
-  addNewFileToPoi (state, fileObject) {
+  addNewFileToPoi(state, fileObject) {
     if (state.currentPoi.files)
       state.currentPoi.files.push(fileObject)
-    else 
+    else
       state.currentPoi.files = [fileObject]
   },
-  addNewUrlToPoi (state, urlObject) {
-    if(state.currentPoi.urls)
+  addNewUrlToPoi(state, urlObject) {
+    if (state.currentPoi.urls)
       state.currentPoi.urls.push(urlObject)
-    else 
+    else
       state.currentPoi.urls = [urlObject]
   },
   deleteFileFromPoi(state, payload) {
@@ -195,22 +198,22 @@ export const mutations = {
   },
   addTagToPoi(state, payload) {
     console.log('MUTATION: updating tags', payload)
-    state.currentPoi.tags.push(payload)
+    state.currentPoi.tags = payload
   },
-  savePoi (state, { poi }) {
+  savePoi(state, { poi }) {
     console.log('empty save poi function', poi)
   },
-  saveCurrentPoi (state, { poi }) {
+  saveCurrentPoi(state, { poi }) {
     state.currentPoi = poi
   },
-  removeCurrentPoi (state) {
+  removeCurrentPoi(state) {
     if (state.currentPoi === null) { return }
     state.pois = state.pois.filter(p => p.id !== state.currentPoi.id)
     state.currentPoi = null
   },
-  setCurrentPoi (state, poi) {
+  setCurrentPoi(state, poi) {
     // validate poi
-    console.log('setcurrent', poi)
+    console.log('setcurrent', poi.title)
     state.currentPoi = poi
   },
   setPois(state, pois) {

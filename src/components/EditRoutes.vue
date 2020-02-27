@@ -44,8 +44,10 @@
               required
               @input.native="updateRoute($event);"
             />
-            <v-text-field
+            <v-textarea
               id="description"
+              auto-grow
+              outlined
               :value="currentRoute.description"
               :rules="someText"
               :label="$t('route.description')"
@@ -220,9 +222,6 @@ export default {
   },
   methods: {
     ...mapActions(["addNewFileToRoute", "addNewUrlToRoute","deleteFileFromRoute", "deleteUrlFromRoute", "updateFileFromRoute", "updateUrlFromRoute"]),
-    setDescription(description) {
-      this.description = description;
-    },
     updateRoute(e) {
       console.log('setting local route from form element', e)
       this.$set(this.route, e.target.id, e.target.value);
