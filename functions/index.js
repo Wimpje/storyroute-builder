@@ -6,14 +6,14 @@ const functions = require('firebase-functions');
 // exports.helloWorld = functions.https.onRequest((request, response) => {
 //  response.send("Hello from Firebase!");
 // });
-const emails = new Set(['wimhoringa@gmail.com', 'pkhoringa@gmail.com']);
+const emails = new Set([]);
 const admin = require('firebase-admin');
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
   databaseURL: 'https://wims-test-2c2e4.firebaseio.com'
 });
-
+/*
 exports.setCustomClaims = functions.auth.user().onCreate(user => {
   let promise = Promise.resolve();
   if (emails.has(user.email)) {
@@ -25,11 +25,21 @@ exports.setCustomClaims = functions.auth.user().onCreate(user => {
 
   return promise;
 });
+*/
 
+const routesRef = admin.firestore().collection('routes');
+
+exports.UpdateRouteWithPoiChange = functions.firestore.document('pois/{ID}').onUpdate((change, context) => {
+  
+
+})
+
+
+/*
 exports.Google_T2S = functions.firestore.document('pois/{ID}').onUpdate((change, context) => {
 
   // if shouldn't convert, don't convert...
-  if (!change.after.data().description.convertToVoice)
+  if (!change.after.data().description)
     return;
 
 
@@ -97,3 +107,4 @@ exports.Google_T2S = functions.firestore.document('pois/{ID}').onUpdate((change,
     textToSpeechRequest();
   } // close if
 }); // close Google_T2S
+*/
