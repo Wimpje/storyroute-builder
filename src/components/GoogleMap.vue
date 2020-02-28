@@ -252,7 +252,10 @@ export default {
       this.$store.commit("setCurrentPoi", marker);
 
       this.$emit('markerClicked', marker)
-      console.log('marker clicked', marker, this)
+      if(marker && 'id' in marker)
+        console.log('marker clicked', marker.id)
+      else 
+        console.log('marker clicked', marker)
     },
     moveConfirmed() {
       this.$store.dispatch("savePoi", this.tempNewPoi);

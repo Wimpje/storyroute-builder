@@ -21,7 +21,7 @@
         
         <v-btn
           icon
-          @click="shouldDisplay = false"
+          @click="close()"
         >
           <v-icon>mdi-close</v-icon>
         </v-btn>
@@ -92,11 +92,10 @@
             >
               {{ fileAddLabel }}
             </v-btn>
-            <v-checkbox
+            <v-switch
               id="convertToVoice"
-              :value="currentRoute.convertToVoice"
+              v-model="convertToVoice"
               :label="$t('marker.convertTextToVoice')"
-              @input.native="updateRoute($event)"
             />
           </v-card-text>
         
@@ -110,7 +109,7 @@
             </v-btn>
             <v-btn
               class="mr-4"
-              @click="shouldDisplay = false"
+              @click="close()"
             >
               {{ this.$i18n.t('marker.cancel') }}
             </v-btn>
@@ -128,7 +127,7 @@
           <v-card-title class="headline">
             {{ this.$i18n.t('marker.deleteDialogTitle') }} 
           </v-card-title>
-          <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title: currentRoute.title}) }}</v-card-text>
+          <v-card-text>{{ this.$i18n.t('route.deleteDialogText', {title: currentRoute.title}) }}</v-card-text>
           <v-card-actions>
             <v-spacer />
             <v-btn
@@ -180,8 +179,7 @@ export default {
         v => (v && v.length > 1) || this.$i18n.t("validation.atLeastChars", 1)
       ],
    
-      lazy: true,
-    
+      lazy: true,    
       route: {},
       deleteConfirmDialog: false,
       directionsService: {},
@@ -189,6 +187,12 @@ export default {
       travelModes: ['BICYCLING', 'DRIVING', 'WALKING'],
       travelMode: 'BICYCLING'
     };
+  },
+  watch: {
+    currentRoute: function(newVal, oldVal) {
+      if(newVal.id !== oldVal.id)
+        this.resetForm();
+    }
   },
   computed: {
     urlAddLabel() {
@@ -202,21 +206,29 @@ export default {
           return 'Add another file'
       else 
         return 'Add file'
-    }
-    ,
+    },
+    convertToVoice: {
+      get() {
+        return this.currentRoute.convertToVoice
+      },
+      set(value) {
+        if (this.route) {
+          if(typeof value !== 'undefined') {
+            this.$set(this.route, "convertToVoice", value);
+          }
+        }
+      }
+    },
     shouldDisplay: {
       get() {
         return this.display;
       },
       set(value) {
         this.$emit("update:display", value);
-        this.$emit("setCurrentRouteToNone", true);
       }
     },
     ...mapGetters(["currentRoute"]),
     google: gmapApi
-    // eslint-disable-next-line object-shorthand
-    
   },
   created() {
   },
@@ -225,6 +237,7 @@ export default {
     updateRoute(e) {
       console.log('setting local route from form element', e)
       this.$set(this.route, e.target.id, e.target.value);
+      this.$emit('routeChanged', this.route)
     },
     validate() {
       if (this.$refs.form.validate()) {
@@ -235,15 +248,6 @@ export default {
       // merge objects
       const newObject = Object.assign({}, this.currentRoute, this.route)
       this.$store.dispatch("saveRoute", newObject);
-    },
-    reset() {
-      this.key++
-      this.$refs.routeForm.reset();
-      this.$store.dispatch("removeCurrentRoute");
-      this.shouldDisplay = false;
-    },
-    resetValidation() {
-      this.$refs.routeForm.resetValidation();
     },
     getRoute: function (start, destination, mapRef) {
       this.directionsService = new google.maps.DirectionsService()
@@ -261,6 +265,26 @@ export default {
           console.log('Directions request failed due to ' + status)
         }
       })
+    },
+    resetForm() {
+      this.key++;
+      this.$refs.routeForm.reset();
+      this.date = ''
+      this.route = {}
+      console.log('resetting route form')
+      this.$emit('routeChanged', null)
+    },
+    reset() {
+      this.resetForm()
+      this.$store.dispatch("removeCurrentRoute");
+      this.shouldDisplay = false;
+    },
+    resetValidation() {
+      this.$refs.routeForm.resetValidation();
+    },
+    close() {
+      this.shouldDisplay = false
+      this.resetForm()
     }
   }
 };

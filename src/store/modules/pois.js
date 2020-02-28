@@ -1,5 +1,6 @@
 //import { fireStore, Timestamp } from 'firestore'
 import i18n from '@/plugins/i18n';
+import { deepCopy } from '@/plugins/utils'
 
 export const state = () => {
   return {
@@ -58,24 +59,34 @@ const PoiSchema = {
 
 
 export const actions = {
-  initPois: async function ({ commit }) {
+  initPois: async function ({state, commit }) {
+    if(state.unsubscribe)
+      state.unsubscribe() // unsubscribe
+
     const ref = await this.$app.$firebase.firestore().collection('pois')
+    // empty points
+    commit('setPois', [])
+
     // TODO not efficient! Think about this (it does make collaborative editing sort of possible...)
     // causes lots of read/writes for points... 
-    ref.onSnapshot((snapShot) => {
-      commit('setPois', [])
-      snapShot.forEach((poi) => {
-        const p = poi.data()
-        p.id = poi.id
-        commit('createPoi', p)
+    const unsubscribe = ref.onSnapshot((snapShot) => {
+      snapShot.docChanges().forEach((change) => {
+        console.log(`FB:${change.type}:poi`, change.doc.id)
+        if(change.type !== "removed") {
+          const p = change.doc.data()
+          p.id = change.doc.id
+          
+          commit('updatePoi', p)
+        }
       })
     })
+    commit('addPoiUnsubscribe', unsubscribe)
   },
   addNewFileToPoi({ commit }) {
-    commit('addNewFileToPoi', Object.assign({}, FileSchema))
+    commit('addNewFileToPoi', Object.assign({}, deepCopy(FileSchema)))
   },
   addNewUrlToPoi({ commit }) {
-    commit('addNewUrlToPoi', Object.assign({}, UrlSchema))
+    commit('addNewUrlToPoi', Object.assign({}, deepCopy(UrlSchema)))
   },
   addTagToPoi({ commit }, payload) {
     commit('addTagToPoi', payload)
@@ -110,16 +121,16 @@ export const actions = {
   async createPoi({ commit, state }, poi) {
     const ref = await this.$app.$firebase.firestore().collection('pois').doc()
     const date = this.$app.$firebase.firestore.Timestamp.fromDate(new Date('1945-04-11'))
-    const newPoi = {
+    const newPoi = Object.assign({}, deepCopy(Schema), deepCopy(PoiSchema), {
       id: ref.id,
       position: poi.position,
       date: date,
       title: poi.title == null ? i18n.t('marker.title', { 'length': state.pois.length }) : poi.title,
       description: poi.description == null ? i18n.t('marker.description', { 'length': state.pois.length }) : poi.description
-    }
-
-    commit('createPoi', newPoi)
-    commit("setCurrentPoi", newPoi);
+    })
+    
+    commit('addPoi', newPoi)
+    commit("setCurrentPoi", newPoi)
   },
   async savePoi({ commit }, poi) {
     // if updated, save updated-date
@@ -163,10 +174,12 @@ export const actions = {
 }
 
 export const mutations = {
-  createPoi(state, poi) {
-    const newPoi = Object.assign({}, Schema, PoiSchema, poi)
-    console.log('created poi', newPoi.title)
-    state.pois.push(newPoi)
+  addPoi(state, poi) {
+    console.log('added poi', poi.title)
+    state.pois.push(poi)
+  },
+  addPoiUnsubscribe(state, s) {
+    state.unsubscribe = s
   },
   addNewFileToPoi(state, fileObject) {
     if (state.currentPoi.files)
@@ -211,10 +224,27 @@ export const mutations = {
     state.pois = state.pois.filter(p => p.id !== state.currentPoi.id)
     state.currentPoi = null
   },
+  updatePoi(state, poi) {
+    if (state.pois.findIndex(p => p.id === poi.id) > -1) {
+      // update it
+     state.pois.forEach(p => {
+        if(p.id === poi.id) {
+            Object.assign(p, poi)
+        }
+      })
+    }
+    else {
+      // add it
+      state.pois.push(poi)
+    }
+  },
   setCurrentPoi(state, poi) {
     // validate poi
     console.log('setcurrent', poi.title)
     state.currentPoi = poi
+  },
+  setCurrentPoiToNone(state, poi) {
+    state.currentPoi = null
   },
   setPois(state, pois) {
     state.pois = pois

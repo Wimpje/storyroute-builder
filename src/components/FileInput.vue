@@ -2,36 +2,33 @@
   <div>
     <v-card outline>
       <v-card-title class="headline">
-        {{ type }} bestand {{ index + 1 }}
+        {{ contentType }} bestand {{ index + 1 }}
       </v-card-title>
 
       <v-card-text>
         <v-text-field
           :id="'file' + index + 'title'"
+          v-model="localFile.title"
           dense
-          :value="file.title"
           name="title"
           :label="$t('file.title')"
-          @change.native="update($event)"
         />
         <v-text-field
           :id="'file' + index + 'description'"
+          v-model="localFile.description"
           dense
-          :value="file.description"
           name="description"
           :label="$t('file.description')"
-          @change.native="update($event)"
         />
         <v-select
-          v-model="type"
+          v-model="localFile.type"
           dense
           :items="contentTypes"
           :label="$t('content.type')"
-          @change.native="update($event)"
         />
         <v-file-input
-          v-if="type"
-          :id="'file'+type+index"
+          v-if="contentType"
+          :id="'file'+contentType+index"
           :multiple="false"
           :label="label"
           :full-width="true"
@@ -47,21 +44,29 @@
           :rotate="360"
           :value="progressUpload"
         />
-
+        <v-switch 
+          v-if="localFile.firebaseUrl && contentType == 'image'"
+          v-model="localFile.lead"
+          label="Toon deze afbeelding bij punt"
+        />
+        <a
+          v-if="localFile.firebaseUrl"
+          :href="localFile.firebaseUrl"
+        >{{ localFile.firebaseUrl }}</a>
         <img
-          v-if="(uploadEnd || file.firebaseUrl) && type === 'image'"
-          :src="file.firebaseUrl"
+          v-if="(uploadEnd || localFile.firebaseUrl) && contentType === 'image'"
+          :src="localFile.firebaseUrl"
           width="20%"
         >
         <video 
-          v-if="(uploadEnd || file.firebaseUrl) && type === 'video'"
-          :src="file.firebaseUrl"
+          v-if="(uploadEnd || localFile.firebaseUrl) && contentType === 'video'"
+          :src="localFile.firebaseUrl"
           width="200"
           controls
         />
         <audio
-          v-if="(uploadEnd || file.firebaseUrl) && type === 'audio'"
-          :src="file.firebaseUrl"
+          v-if="(uploadEnd || localFile.firebaseUrl) && contentType === 'audio'"
+          :src="localFile.firebaseUrl"
           controls
           width="200"
         />
@@ -113,25 +118,29 @@ export default {
       uploading: false,
       uploadEnd: false,
       firebaseUrl: "",
-      localFile: {},
-      deleting: false,
-      type: 'other'
+      // copy of file to be able to 'v-model' it. On save pass it back with emit
+      localFile: Object.assign({}, this.file),
+      deleting: false
     };
   },
   computed: {
-    
+    contentType: {
+      get() {
+        return this.localFile.type
+      }    
+    },
     value() {
-      return this.file.file ? this.file.file : "file.ext";
+      return this.localFile.file ? this.localFile.file : "file.ext";
     },
     label() {
-      return this.$i18n.t("content." + (this.type ? this.type : "other"));
+      return this.$i18n.t("content." + (this.contentType ? this.contentType : "other"));
     },
     contentTypes() {
       return ContentTypes;
     },
     icon: {
       get() {
-        switch (this.type) {
+        switch (this.contentType) {
           case "audio":
             return "mdi-volume-high";
           case "video":
@@ -145,7 +154,7 @@ export default {
     },
     accept: {
       get() {
-        switch (this.type) {
+        switch (this.contentType) {
           case "audio":
             return "audio/*";
           case "video":
@@ -159,11 +168,9 @@ export default {
     }
   },
   watch: {
-      file: function(oldFile, newFile) {
-        if(newFile) {
-          this.type = newFile.type
-        }
-      },
+      localFile: { handler(oldVal, newVal) {
+        this.$emit('updateFile', {index: this.index, val: newVal})
+      }, deep:true },
       uploadTask: function() {
         this.uploadTask.on(
           "state_changed",
@@ -179,8 +186,7 @@ export default {
               this.uploading = false;
               this.firebaseUrl = firebaseUrl;
               this.localFile.firebaseUrl = firebaseUrl
-              this.$emit("firebaseUrl", firebaseUrl);
-              this.$emit('updateFile', {index: this.index, val: this.localFile})
+              console.log("Finished uploading, firebase URL", firebaseUrl)
             });
           }
         );
@@ -189,9 +195,9 @@ export default {
   methods: {
     deleteFile() {
       const that = this
-      const firebaseUrl = this.file.firebaseUrl || (this.localFile && this.localFile.firebaseUrl)
+      const firebaseUrl = this.localFile.firebaseUrl
       if(!firebaseUrl) {
-        that.$emit("deleteFile", {index: that.index, file: that.file});
+        that.$emit("deleteFile", {index: that.index, file: that.localFile});
         console.log('deleting without contacting firebase (no firebaseUrl found')
         that.deleting = false
         return
@@ -202,14 +208,14 @@ export default {
       this.deleting = true
       image.delete().then(function() {
         console.log('file deleted');
-        that.$emit("deleteFile", {index: that.index, file: that.file});
+        that.$emit("deleteFile", {index: that.index, file: that.localFile});
         that.deleting = false
       }).catch(function(error) {
         console.log('an error occurred', error);
         if(error.code === "storage/object-not-found") {
           // go ahead, the image was not there
           console.log("still removing it, file was not there")
-          that.$emit("deleteFile", {index: that.index, file: that.file});
+          that.$emit("deleteFile", {index: that.index, file: that.localFile});
         } else {
           that.$store.commit('setMessage', {title: 'Error', message: error, duration: 15000}, { root: true })
         }
@@ -221,16 +227,10 @@ export default {
       if(files[0]){
         this.uploading = true
         this.localFile.fileName = this.fileName = files[0].name
-        const storageRef = this.$firebase.storage().ref(this.type + '/'+ Math.random() + '_'  + this.localFile.title);
-        this.uploadTask  = storageRef.put(files[0]);
+        const storageRef = this.$firebase.storage().ref(this.contentType + '/'+ Math.random() + '_'  + this.localFile.title);
+        this.uploadTask = storageRef.put(files[0]);
       }
-
-    },
-    update: function(e) {
-      console.log(`setting file ${this.index} from form element ${e.target.name}: ${e.target.value}`, e);
-      this.localFile[e.target.name] = e.target.value
-      this.$emit('updateFile', {index: this.index, val: this.localFile})
-    },
+    }
   }
 };
 </script>

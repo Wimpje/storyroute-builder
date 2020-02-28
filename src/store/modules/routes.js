@@ -1,8 +1,11 @@
 import { Schema, UrlSchema, FileSchema, ContentTypes } from "@/store/modules/pois.js";
 import i18n from '@/plugins/i18n';
+import { deepCopy } from '@/plugins/utils'
 
 export const RouteSchema = {
-  pois: []
+  pois: [],
+  files: [],
+  urls:[]
 }
 
 export const state = () => {
@@ -23,34 +26,32 @@ export const getters = {
 export const actions = {
   initRoutes: async function ({ state, commit, dispatch}) {
     const ref = await this.$app.$firebase.firestore().collection('routes')
-    
-    // causes lots of read/writes for routes... 
+    commit('setRoutes', [])
+
     ref.onSnapshot((snapShot) => {
-      commit('setRoutes', [])
-      snapShot.forEach((route) => {
-        const r = route.data()
-        r.id = route.id
-        commit('createRoute', r)
+      snapShot.docChanges().forEach((change) => {
+        console.log(`FB:${change.type}:route`, change.doc.id)
+        if(change.type !== "removed") {
+          const r = change.doc.data()
+          r.id = change.doc.id
+          commit('updateRoute', r)
+        }
       })
-      if(state.routes.length === 0) {
-        dispatch('createRoute', {})
-      }
     })
   },
   async createRoute ({ commit, state }, route) {
     const ref = await this.$app.$firebase.firestore().collection('routes').doc()
-    const newRoute = {
-      ...RouteSchema,
+    let schema = deepCopy(RouteSchema)
+    const newRoute = Object.assign({}, schema, {
       id: ref.id,
       title: route.title == null ? i18n.t('marker.title', { 'length': state.routes.length }) : route.title,
       description: route.description == null ? i18n.t('marker.description', { 'length': state.routes.length }) : route.description
-    }
+    })
 
-    commit('createRoute', newRoute)
+    commit('addRoute', newRoute)
     commit('setCurrentRoute', newRoute)
-
   },
-  async saveRoute({commit}, route) {
+  async saveRoute({rootState,commit}, route) {
     if (!route.savedDate) {
       route.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
       if (route.updateCnt != null)
@@ -60,6 +61,17 @@ export const actions = {
     }
     const user = (this.$app.$store.state.auth || {}).user
     route.author = user.email ? user.email : ''
+
+    // here we check the current Pois and re-add / save the values
+    
+    // first filter out removed pois
+    route.pois = route.pois.filter(poi => {
+      return rootState.pois.pois.findIndex(p => p.id == poi.id) > -1;
+    })
+    route.pois = route.pois.map(poi => {
+      const idx = rootState.pois.pois.findIndex(p => p.id == poi.id);
+      return Object.assign({}, rootState.pois.pois[idx])
+    })
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
     await this.$app.$firebase.firestore().collection('routes').doc(route.id).set({ ...route, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
  
@@ -98,10 +110,10 @@ export const actions = {
   }
 }
 export const mutations = {
- createRoute (state,  route ) {
-    const newRoute = Object.assign({}, Schema, RouteSchema, route)
-    console.log('created route', newRoute)
-    state.routes.push(newRoute)
+ addRoute (state,  route ) {
+    
+    console.log('added route', route)
+    state.routes.push(route)
   },
   setCurrentRoute (state, val) {
     // validate route
@@ -172,6 +184,21 @@ export const mutations = {
     console.log('MUTATION - updateCurrentRoute pois order', payload)
     state.currentRoute.pois = payload
   },
+  updateRoute(state, route) {
+    // if it exists:
+    if (state.routes.findIndex(r => r.id === route.id) > -1) {
+      // replace it with updated value
+     state.routes.forEach(r => {
+        if(r.id === route.id) {
+          Object.assign(r, route)
+        }
+      })
+    }
+    else {
+      // add it
+      state.routes.push(route)
+    }
+  }
 }
 
 

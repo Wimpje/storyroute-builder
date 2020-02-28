@@ -16,7 +16,10 @@
     },
     "route": {
       "title": "Title",
-      "description": "Description"
+      "newTitle": "New route",
+      "description": "Description",
+      "deleteDialogText": "Verwijder route '{title}' - dit kan niet ongedaan gemaakt worden",
+      "deleteDialogTitle": "Verwijder route"
     },
     "marker": {
       "description": "Description - {length}",
@@ -107,7 +110,10 @@
     },
     "route": {
       "title": "Titel",
-      "description": "Beschrijving"
+      "description": "Beschrijving",
+      "newTitle": "Nieuwe route",
+      "deleteDialogText": "Verwijder route '{title}' - dit kan niet ongedaan gemaakt worden",
+      "deleteDialogTitle": "Verwijder route"
     },
     "poi": {
       "title": "Titel",

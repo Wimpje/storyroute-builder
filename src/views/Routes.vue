@@ -1,39 +1,75 @@
 <template>
-  <div>
-    <v-select
-      v-model="currentRouteId"
-      dense
-      :items="routes"
-      name="route"
-      item-text="title"
-      item-value="id"
-      :loading="!routes"
-      :label="$t('routes.choose')"
-      return-object
-    />
-    <v-layout row>
-      <v-flex
-        grow
-        pa-1
+  <v-container>
+    <v-row>
+      <v-col>
+        <v-select
+          v-model="currentRouteId"
+          dense
+          :items="routes"
+          name="route"
+          item-text="title"
+          item-value="id"
+          :loading="!routes"
+          :label="$t('routes.choose')"
+          return-object
+        />
+      
+        <!--<v-chip
+          v-if="currentRoute && !saved"
+          class="ma-2"
+          color="red"
+          text-color="white"
+        >
+          unsaved
+        </v-chip>-->
+      </v-col>
+      <v-col>
+        <v-btn @click="createRoute">
+          <v-icon>mdi-map-plus</v-icon>Nieuwe route toevoegen
+        </v-btn>
+      </v-col>
+      <v-col>
+        <v-btn @click="editRoute">
+          <v-icon>mdi-map-check</v-icon>Bewerk Route
+        </v-btn>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col
+        cols="7"
       >
         <google-map
           :directions-result="directionsResult"
           @mapClicked="mapClicked"
           @markerClicked="markerClicked"
         />
-      </v-flex>
-      <v-flex
-        shrink
-        pa-1
+      </v-col>
+      <v-col
+        cols="5"
       >
         <v-card
-          v-if="currentRoute"
           outline
         >
           <v-card-title class="headline">
             {{ this.$i18n.t('routes.order') }}
+            <v-tooltip
+              bottom
+              max-width="150"
+            >
+              <template v-slot:activator="{ on }">
+                <v-btn
+                  icon
+                  v-on="on"
+                >
+                  <v-icon color="grey lighten-1">
+                    mdi-help
+                  </v-icon>
+                </v-btn>
+              </template>
+              <span>Klik op een punt om hem toe te voegen aan de route. Daarna kun je de punten omhoog en omlaag slepen om de volgorde te veranderen.</span>
+            </v-tooltip>
           </v-card-title>
-          <v-card-text>
+          <v-card-text v-if="currentRoute && currentRoute.pois.length">
             <v-list>
               <draggable
                 v-model="pois"
@@ -77,28 +113,24 @@
               {{ this.$i18n.t('routes.save') }}
             </v-btn>
           </v-card-text>
+          <v-card-text v-else>
+            Selecteer eerst een route, en klik dan op een punt om hem toe te voegen aan de route. Daarna kun je de punten omhoog en omlaag slepen om de volgorde te veranderen.
+          </v-card-text>
         </v-card>
-      </v-flex>
-    </v-layout>
-    <div v-if="!showRoutes">
-      <v-text-field
-        id="title"
-        v-model="newTitle"
-        name="title"
-        :rules="someText"
-        :label="$t('route.title')"
-        required
-      />
-      <v-btn @click="createRoute">
-        <v-icon>mdi-new</v-icon>Add Route
-      </v-btn>
-    </div>
-    <EditRoutes
-      v-if="currentRoute && showRoutes" 
-      :display.sync="showRoutes"
-      @setCurrentRouteToNone="setCurrentRouteToNone"
-    />
-  </div>
+      </v-col>
+    </v-row>
+    <v-row>
+      <v-col>
+        <EditRoutes
+          v-if="currentRoute && showRoutes"
+          ref="editRouteRef" 
+          :display.sync="showRoutes"
+          @setCurrentRouteToNone="setCurrentRouteToNone"
+          @routeChanged="routeChanged"
+        />
+      </v-col>
+    </v-row>
+  </v-container>
 </template>
 
 <script>
@@ -124,7 +156,8 @@ export default {
       ],
       isDragging: false,
       delayedDragging: false,
-      showPoiSaveButton: false
+      showPoiSaveButton: false,
+      saved: this.currentRoute ? (typeof this.currentRoute.saved === 'undefined' ? false : this.currentRoute.saved) : false
     }
   },
   computed: {
@@ -144,6 +177,7 @@ export default {
       },
       set(value) {
         this.showPoiSaveButton = true
+        this.saved = false
         this.$store.commit('updateCurrentRoutePois', value)
       }
     },
@@ -163,14 +197,15 @@ export default {
   watch: {
     currentRoute: function() {
       console.log("currentRouteChanged")
-      this.newTitle = ''
       this.showPoiSaveButton = false
-
+      
       if (this.currentRoute) {
         this.showRoutes = true
+        this.saved = (typeof this.currentRoute.saved === 'undefined' ? false : this.currentRoute.saved)
       }
       else {
         this.showRoutes = false
+        this.saved = false
       }
     },
     isDragging(newValue) {
@@ -185,15 +220,27 @@ export default {
   },
   created() {
     this.$store.commit('setMapShowAutocomplete', false)
-    // ? this.$store.commit('setCurrentRouteToNone')
+    this.$store.commit('setCurrentRouteToNone')
+    this.$store.commit('setCurrentPoiToNone')
   },
   methods: {
+    routeChanged: function(updatedRoute) {
+      // emitted from form, set save to false
+      this.saved = false
+    },
     //...mapActions(['createRoute']),
     createRoute(event) {
       const route = {
-        title: this.newTitle
+        title: this.$i18n.t("route.newTitle"),
       }
       this.$store.dispatch("createRoute", route)
+    },
+    editRoute() {
+      this.showRoutes = true;
+      this.$nextTick(function() {
+        const el = this.$refs.editRouteRef.$el;
+        el.scrollIntoView({behavior: 'smooth'})
+      })
     },
     centerToPoi(poi) {
 
@@ -207,14 +254,17 @@ export default {
    
       this.$store.commit('addPoiToRoute', poi)
       this.showPoiSaveButton = true
+      this.saved = false
     },
     mapClicked() {
       if (this.currentRoute)
         this.showRoutes = true;
     },
     save() {
-      this.$store.dispatch("saveRoute", this.currentRoute);
+      const updatedRoute = Object.assign( {}, this.currentRoute)
+      this.$store.dispatch("saveRoute", updatedRoute);
       this.showPoiSaveButton = false
+      this.saved = true
     },
     onMove({ relatedContext, draggedContext }) {
       const relatedElement = relatedContext.element;
