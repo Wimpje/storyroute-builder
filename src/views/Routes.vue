@@ -39,84 +39,32 @@
         cols="7"
       >
         <google-map
-          :directions-result="directionsResult"
+          :path="currentPath"
           @mapClicked="mapClicked"
           @markerClicked="markerClicked"
+          @pathEdited="onPathEdited"
         />
       </v-col>
       <v-col
         cols="5"
       >
-        <v-card
-          outline
-        >
-          <v-card-title class="headline">
-            {{ this.$i18n.t('routes.order') }}
-            <v-tooltip
-              bottom
-              max-width="150"
-            >
-              <template v-slot:activator="{ on }">
-                <v-btn
-                  icon
-                  v-on="on"
-                >
-                  <v-icon color="grey lighten-1">
-                    mdi-help
-                  </v-icon>
-                </v-btn>
-              </template>
-              <span>Klik op een punt om hem toe te voegen aan de route. Daarna kun je de punten omhoog en omlaag slepen om de volgorde te veranderen.</span>
-            </v-tooltip>
-          </v-card-title>
-          <v-card-text v-if="currentRoute && currentRoute.pois.length">
-            <v-list>
-              <draggable
-                v-model="pois"
-                element="div"
-              >
-                <transition-group
-                  type="transition"
-                >
-                  <div
-                    v-for="(poi, idx) in pois"
-                    :key="poi.id"
-                  >
-                    <v-list-item
-                      @click="centerToPoi(poi)"
-                    >
-                      {{ idx + 1 }} - {{ poi.title }}
-                      <v-btn
-                        icon
-                        color="warning" 
-                        @click="removePoiFromRoute(poi)"
-                      >
-                        <v-icon>mdi-delete</v-icon>
-                      </v-btn>
-                      <v-btn
-                        v-if="false"
-                        icon
-                        @click="editPoi(poi.id)"
-                      >
-                        <v-icon>mdi-pencil</v-icon>
-                      </v-btn>
-                    </v-list-item>
-                  </div>
-                </transition-group>
-              </draggable>
-            </v-list>
-            <v-btn
-              v-if="showPoiSaveButton"
-              right
-              @click="save()"
-            >
-              {{ this.$i18n.t('routes.save') }}
-            </v-btn>
-          </v-card-text>
-          <v-card-text v-else>
-            Selecteer eerst een route, en klik dan op een punt om hem toe te voegen aan de route. Daarna kun je de punten omhoog en omlaag slepen om de volgorde te veranderen.
-          </v-card-text>
-        </v-card>
+        <v-switch
+          v-if="currentRoute"
+          id="drawingSwitch"
+          v-model="drawingRoute"
+          :label="$t('routes.drawingMode')"
+        />
+        <RouteDraw
+          v-if="currentRoute && drawingRoute"
+          :show-save-button="pathEdited"
+          @save="save"
+        />
+        <RouteOrder
+          v-if="currentRoute && !drawingRoute"
+          :pois="pois"
+          :show-save-button="showPoiSaveButton"
+          @save="save"
+        />
       </v-col>
     </v-row>
     <v-row>
@@ -137,24 +85,28 @@
 import GoogleMap from "@/components/GoogleMap.vue";
 import EditRoutes from "@/components/EditRoutes.vue";
 import { mapActions, mapGetters } from "vuex";
-import draggable from 'vuedraggable'
+import RouteOrder from "@/components/RouteOrder.vue"
+import RouteDraw from "@/components/RouteDraw.vue"
+import { deepCopy } from '@/plugins/utils.js'
 
 export default {
   components: {
     GoogleMap,
     EditRoutes,
-    draggable
+    RouteOrder,
+    RouteDraw
   },
   data() {
     return {
       showRoutes: false,
       newTitle: '',
-      directionsResult: {},
+      drawingRoute: false,
       someText: [
         v => !!v || this.$i18n.t("validation.someTextRequired"),
         v => (v && v.length > 1) || this.$i18n.t("validation.atLeastChars", 1)
       ],
       isDragging: false,
+      pathEdited: false,
       delayedDragging: false,
       showPoiSaveButton: false,
       saved: this.currentRoute ? (typeof this.currentRoute.saved === 'undefined' ? false : this.currentRoute.saved) : false
@@ -165,6 +117,25 @@ export default {
       routes: "getRoutes",
       currentRoute: "currentRoute"
     }),
+    currentPath() {
+      if (this.drawingRoute) {
+        if (this.currentRoute.path.length) {
+          // return a copy so we don't modify store
+          return deepCopy(this.currentRoute.path.map(geoPoint => {
+            return {lat: geoPoint.latitude, lng: geoPoint.longitude }
+          }))
+        }
+        else {
+          // create path between points
+          const pathFromPoints =  this.currentRoute.pois.map(poi => {
+            return {lat: poi.position.latitude, lng: poi.position.longitude}
+          })
+          console.log('created path', pathFromPoints)
+          return pathFromPoints
+        }
+      }
+      return []
+    },
     pois: {
       get() {
           let ret = []
@@ -195,9 +166,15 @@ export default {
     }
   },
   watch: {
+    drawingRoute: function(isDrawingMode) {
+      if (isDrawingMode) {
+        console.log('starting drawing mode')
+      }
+    },
     currentRoute: function() {
       console.log("currentRouteChanged")
       this.showPoiSaveButton = false
+      this.pathEdited = false
       
       if (this.currentRoute) {
         this.showRoutes = true
@@ -249,21 +226,34 @@ export default {
       
     },
     markerClicked(poi) {
+      if (this.drawingRoute) {
+        return
+      }
       if (this.currentRoute)
         this.showRoutes = true;
    
+      // marker or poi? make up your mind
+      this.$store.commit("setMapCenter", {lat: poi.position.latitude, lng: poi.position.longitude});
+      // this.$store.commit("setCurrentPoi", poi);
+
       this.$store.commit('addPoiToRoute', poi)
       this.showPoiSaveButton = true
       this.saved = false
     },
-    mapClicked() {
+    mapClicked(args) {
       if (this.currentRoute)
         this.showRoutes = true;
+      
+      if(this.drawingRoute) {
+        // OK
+      }
     },
+
     save() {
       const updatedRoute = Object.assign( {}, this.currentRoute)
       this.$store.dispatch("saveRoute", updatedRoute);
       this.showPoiSaveButton = false
+      this.pathEdited = false
       this.saved = true
     },
     onMove({ relatedContext, draggedContext }) {
@@ -275,6 +265,11 @@ export default {
     },
     editPoi(poi) {
       
+    },
+    onPathEdited(path) {
+      this.pathEdited = true
+      const pathToPointsArray = path.map(p => new this.$firebase.firestore.GeoPoint(p.lat(), p.lng()))
+      this.$store.commit('setPathToCurrentRoute', pathToPointsArray)
     },
     removePoiFromRoute(poi) {
       this.$store.commit('removePoiFromRoute', poi)

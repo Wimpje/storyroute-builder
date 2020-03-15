@@ -84,6 +84,11 @@ export default {
       })
     },
     markerClicked(marker) {
+      // marker or poi? make up your mind
+      this.$store.commit("setMapCenter", {lat: marker.position.latitude, lng: marker.position.longitude});
+      // TODO check does this work?
+      this.$store.commit("setCurrentPoi", marker);
+
       this.markerEditDialog = true;
     },
     mapClicked(mapClickEvent) {

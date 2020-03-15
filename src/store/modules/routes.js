@@ -3,9 +3,11 @@ import i18n from '@/plugins/i18n';
 import { deepCopy } from '@/plugins/utils'
 
 export const RouteSchema = {
+  subtitle: '',
   pois: [],
   files: [],
-  urls:[]
+  urls: [],
+  path: []
 }
 
 export const state = () => {
@@ -15,23 +17,23 @@ export const state = () => {
   }
 }
 export const getters = {
-  currentRoute (state) {
+  currentRoute(state) {
     return state.currentRoute
   },
-  getRoutes (state) {
+  getRoutes(state) {
     return state.routes
   }
 }
 
 export const actions = {
-  initRoutes: async function ({ state, commit, dispatch}) {
+  initRoutes: async function ({ state, commit, dispatch }) {
     const ref = await this.$app.$firebase.firestore().collection('routes')
     commit('setRoutes', [])
 
     ref.onSnapshot((snapShot) => {
       snapShot.docChanges().forEach((change) => {
         console.log(`FB:${change.type}:route`, change.doc.id)
-        if(change.type !== "removed") {
+        if (change.type !== "removed") {
           const r = change.doc.data()
           r.id = change.doc.id
           commit('updateRoute', r)
@@ -39,7 +41,7 @@ export const actions = {
       })
     })
   },
-  async createRoute ({ commit, state }, route) {
+  async createRoute({ commit, state }, route) {
     const ref = await this.$app.$firebase.firestore().collection('routes').doc()
     let schema = deepCopy(RouteSchema)
     const newRoute = Object.assign({}, schema, {
@@ -51,19 +53,22 @@ export const actions = {
     commit('addRoute', newRoute)
     commit('setCurrentRoute', newRoute)
   },
-  async saveRoute({rootState,commit}, route) {
-    if (!route.savedDate) {
+  async saveRoute({ rootState, commit }, route) {
+    if (route.savedDate) {
       route.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
       if (route.updateCnt != null)
         route.updateCnt = route.updateCnt++
       else
         route.updateCnt = 1
     }
+    else {
+      route.savedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
+    }
     const user = (this.$app.$store.state.auth || {}).user
     route.author = user.email ? user.email : ''
 
     // here we check the current Pois and re-add / save the values
-    
+
     // first filter out removed pois
     route.pois = route.pois.filter(poi => {
       return rootState.pois.pois.findIndex(p => p.id == poi.id) > -1;
@@ -73,32 +78,32 @@ export const actions = {
       return Object.assign({}, rootState.pois.pois[idx])
     })
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
-    await this.$app.$firebase.firestore().collection('routes').doc(route.id).set({ ...route, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp()})
- 
+    await this.$app.$firebase.firestore().collection('routes').doc(route.id).set({ ...route, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp() })
+
     commit('saveRoute', route)
     // TODO i18n
-    commit('setMessage', {title: 'Route Saved', message:`The route ${route.title} has been saved`})
+    commit('setMessage', { title: 'Route Saved', message: `The route ${route.title} has been saved` })
   },
- 
-  addNewFileToRoute({commit}) {
+
+  addNewFileToRoute({ commit }) {
     commit('addNewFileToRoute', Object.assign({}, FileSchema))
-   },
-   addNewUrlToRoute({commit}) {
+  },
+  addNewUrlToRoute({ commit }) {
     commit('addNewUrlToRoute', Object.assign({}, UrlSchema))
-   },
-   deleteFileFromRoute({commit}, payload){
-     commit('deleteFileFromRoute', payload)
-   },
-   deleteUrlFromRoute({commit}, payload){
-     commit('deleteUrlFromRoute', payload)
-   }, 
-   updateUrlFromRoute({commit}, payload){
-     commit('updateUrlFromRoute', payload)
-   },
-   updateFileFromRoute({commit}, payload){
-     commit('updateFileFromRoute', payload)
-   },
-   async removeCurrentRoute ({ commit, state }) {
+  },
+  deleteFileFromRoute({ commit }, payload) {
+    commit('deleteFileFromRoute', payload)
+  },
+  deleteUrlFromRoute({ commit }, payload) {
+    commit('deleteUrlFromRoute', payload)
+  },
+  updateUrlFromRoute({ commit }, payload) {
+    commit('updateUrlFromRoute', payload)
+  },
+  updateFileFromRoute({ commit }, payload) {
+    commit('updateFileFromRoute', payload)
+  },
+  async removeCurrentRoute({ commit, state }) {
     if (state.currentRoute === null) { return }
     const r = state.currentRoute
     if (state.currentRoute.saved) {
@@ -110,32 +115,32 @@ export const actions = {
   }
 }
 export const mutations = {
- addRoute (state,  route ) {
-    
+  addRoute(state, route) {
+
     console.log('added route', route)
     state.routes.push(route)
   },
-  setCurrentRoute (state, val) {
+  setCurrentRoute(state, val) {
     // validate route
     console.log('setCurrentRoute', val)
     state.currentRoute = val
   },
-  setRoutes (state, routes) {
+  setRoutes(state, routes) {
     state.routes = routes
   },
-  saveRoute (state, route) {
+  saveRoute(state, route) {
     state.currentRoute = route
   },
-  addNewFileToRoute (state, fileObject) {
+  addNewFileToRoute(state, fileObject) {
     if (state.currentRoute.files)
       state.currentRoute.files.push(fileObject)
-    else 
+    else
       state.currentRoute.files = [fileObject]
   },
-  addNewUrlToRoute (state, urlObject) {
-    if(state.currentRoute.urls)
+  addNewUrlToRoute(state, urlObject) {
+    if (state.currentRoute.urls)
       state.currentRoute.urls.push(urlObject)
-    else 
+    else
       state.currentRoute.urls = [urlObject]
   },
   deleteFileFromRoute(state, payload) {
@@ -157,15 +162,15 @@ export const mutations = {
   addPoiToRoute(state, payload) {
     if (state.currentRoute) {
       const existingPoi = state.currentRoute.pois.filter((poi) => payload.id === poi.id)
-      if(existingPoi.length > 0) {
-        this.$app.$store.commit('setMessage', {title: 'POI already added to route', message:`This point is already part of the route, to delete it click the button on the side`}) // TODO better implementation
+      if (existingPoi.length > 0) {
+        this.$app.$store.commit('setMessage', { title: 'POI already added to route', message: `This point is already part of the route, to delete it click the button on the side` }) // TODO better implementation
       }
       else {
         state.currentRoute.pois.push(payload)
       }
     }
     else
-      this.$app.$store.commit('setMessage', {title: 'Error adding POI', message:`No route selected yet! Cannot add this Point`}) // TODO better implementation
+      this.$app.$store.commit('setMessage', { title: 'Error adding POI', message: `No route selected yet! Cannot add this Point` }) // TODO better implementation
   },
   removePoiFromRoute(state, payload) {
     const idx = state.currentRoute.pois.findIndex((p) => p.id === payload.id)
@@ -184,12 +189,15 @@ export const mutations = {
     console.log('MUTATION - updateCurrentRoute pois order', payload)
     state.currentRoute.pois = payload
   },
+  setPathToCurrentRoute(state, path) {
+    state.currentRoute.path = path
+  },
   updateRoute(state, route) {
     // if it exists:
     if (state.routes.findIndex(r => r.id === route.id) > -1) {
       // replace it with updated value
-     state.routes.forEach(r => {
-        if(r.id === route.id) {
+      state.routes.forEach(r => {
+        if (r.id === route.id) {
           Object.assign(r, route)
         }
       })

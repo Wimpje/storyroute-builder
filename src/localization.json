@@ -12,14 +12,21 @@
       "addEdit": "Add/edit route",
       "choose": "choose route",
       "order": "drag in correct route order",
-      "save": "Save"
+      "travelMode": "Travel mode",
+      "distance": "Route distance (KM)",
+      "save": "Save",
+      "drawingMode": "Draw route mode",
+      "drawRoute": "Draw route on map"
     },
     "route": {
       "title": "Title",
       "newTitle": "New route",
       "description": "Description",
       "deleteDialogText": "Verwijder route '{title}' - dit kan niet ongedaan gemaakt worden",
-      "deleteDialogTitle": "Verwijder route"
+      "deleteDialogTitle": "Verwijder route",
+      "subtitle": "Sub title",
+      "travelMode": "Travel mode",
+      "distance": "Distance"
     },
     "marker": {
       "description": "Description - {length}",
@@ -105,15 +112,22 @@
       "title":"Bewerk routes",
       "addEdit": "Bewerk route",
       "choose": "Kies route",
+      "travelMode": "Vervoersmethode",
+      "distance": "Route afstand (KM)",
       "order": "Sleep in de juiste volgorde",
-      "save": "Opslaan"
+      "save": "Opslaan",
+      "drawingMode": "Teken route modus",
+      "drawRoute": "Teken route op kaart"
     },
     "route": {
       "title": "Titel",
       "description": "Beschrijving",
       "newTitle": "Nieuwe route",
       "deleteDialogText": "Verwijder route '{title}' - dit kan niet ongedaan gemaakt worden",
-      "deleteDialogTitle": "Verwijder route"
+      "deleteDialogTitle": "Verwijder route",
+      "subtitle": "Sub titel",
+      "travelMode": "Vervoersmethode",
+      "distance": "Afstand"
     },
     "poi": {
       "title": "Titel",

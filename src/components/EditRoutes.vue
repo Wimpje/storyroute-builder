@@ -1,24 +1,20 @@
 /* eslint-disable object-shorthand */
 <template>
   <div>
-    <v-card
-      flat
-    >
+    <v-card flat>
       <v-toolbar dense>
-        <v-toolbar-title>
-          {{ this.$i18n.t('routes.addEdit') }}
-        </v-toolbar-title>
+        <v-toolbar-title>{{ this.$i18n.t('routes.addEdit') }}</v-toolbar-title>
 
         <v-spacer />
 
         <v-btn
           icon
-          color="warning" 
+          color="warning"
           @click="deleteConfirmDialog = true"
         >
           <v-icon>mdi-delete</v-icon>
         </v-btn>
-        
+
         <v-btn
           icon
           @click="close()"
@@ -44,6 +40,23 @@
               required
               @input.native="updateRoute($event);"
             />
+            <v-text-field
+              id="subtitle"
+              name="subtitle"
+              :value="currentRoute.subtitle"
+              :rules="someText"
+              :label="$t('route.subtitle')"
+              required
+              @input.native="updateRoute($event);"
+            />
+            <v-text-field
+              id="distance"
+              name="distance"
+              :value="currentRoute.distance"
+              :label="$t('route.distance')"
+              @input.native="updateRoute($event);"
+            />
+            
             <v-textarea
               id="description"
               auto-grow
@@ -55,7 +68,14 @@
               name="description"
               @input.native="updateRoute($event);"
             />
-            
+            <v-select
+              v-model="travelMode"
+              dense
+              required
+              :items="travelModes"
+              :label="$t('route.travelMode')"
+            />
+
             <div
               v-for="(url, index) in currentRoute.urls"
               :key="`url${index}`"
@@ -69,12 +89,10 @@
                 @updateUrl="updateUrlFromRoute"
               />
             </div>
-            <v-btn
-              @click="addNewUrlToRoute"
-            >
+            <v-btn @click="addNewUrlToRoute">
               {{ urlAddLabel }}
             </v-btn>
-          
+
             <div
               v-for="(file, index) in currentRoute.files"
               :key="`file${index}`"
@@ -85,11 +103,9 @@
                 class="my-4"
                 @deleteFile="deleteFileFromRoute"
                 @updateFile="updateFileFromRoute"
-              />     
+              />
             </div>
-            <v-btn
-              @click="addNewFileToRoute"
-            >
+            <v-btn @click="addNewFileToRoute">
               {{ fileAddLabel }}
             </v-btn>
             <v-switch
@@ -98,7 +114,7 @@
               :label="$t('marker.convertTextToVoice')"
             />
           </v-card-text>
-        
+
           <v-card-actions>
             <v-btn
               color="primary"
@@ -125,7 +141,7 @@
       >
         <v-card>
           <v-card-title class="headline">
-            {{ this.$i18n.t('marker.deleteDialogTitle') }} 
+            {{ this.$i18n.t('marker.deleteDialogTitle') }}
           </v-card-title>
           <v-card-text>{{ this.$i18n.t('route.deleteDialogText', {title: currentRoute.title}) }}</v-card-text>
           <v-card-actions>
@@ -159,7 +175,8 @@ import UrlInput from "@/components/UrlInput.vue";
 
 export default {
   components: {
-    FileInput, UrlInput
+    FileInput,
+    UrlInput
   },
   props: {
     display: {
@@ -178,42 +195,43 @@ export default {
         v => !!v || this.$i18n.t("validation.someTextRequired"),
         v => (v && v.length > 1) || this.$i18n.t("validation.atLeastChars", 1)
       ],
-   
-      lazy: true,    
+
+      lazy: true,
       route: {},
       deleteConfirmDialog: false,
       directionsService: {},
       directionsDisplay: {},
-      travelModes: ['BICYCLING', 'DRIVING', 'WALKING'],
-      travelMode: 'BICYCLING'
+      travelModes: ["BICYCLING", "DRIVING", "WALKING"],
+      travelMode: "BICYCLING"
     };
   },
   watch: {
     currentRoute: function(newVal, oldVal) {
-      if(newVal.id !== oldVal.id)
-        this.resetForm();
+      if (newVal.id !== oldVal.id) this.resetForm();
+    },
+    travelMode: function(newVal, oldVal) {
+      this.$set(this.route, 'travelMode', newVal);
+      this.$emit("routeChanged", this.route);
     }
   },
   computed: {
     urlAddLabel() {
-      if(this.currentRoute.urls && this.currentRoute.urls.length > 0 )
-        return 'Add another url'
-      else 
-        return 'Add url'
+      if (this.currentRoute.urls && this.currentRoute.urls.length > 0)
+        return "Add another url";
+      else return "Add url";
     },
     fileAddLabel() {
-      if(this.currentRoute.files && this.currentRoute.files.length > 0 )
-          return 'Add another file'
-      else 
-        return 'Add file'
+      if (this.currentRoute.files && this.currentRoute.files.length > 0)
+        return "Add another file";
+      else return "Add file";
     },
     convertToVoice: {
       get() {
-        return this.currentRoute.convertToVoice
+        return this.currentRoute.convertToVoice;
       },
       set(value) {
         if (this.route) {
-          if(typeof value !== 'undefined') {
+          if (typeof value !== "undefined") {
             this.$set(this.route, "convertToVoice", value);
           }
         }
@@ -230,14 +248,20 @@ export default {
     ...mapGetters(["currentRoute"]),
     google: gmapApi
   },
-  created() {
-  },
+  created() {},
   methods: {
-    ...mapActions(["addNewFileToRoute", "addNewUrlToRoute","deleteFileFromRoute", "deleteUrlFromRoute", "updateFileFromRoute", "updateUrlFromRoute"]),
+    ...mapActions([
+      "addNewFileToRoute",
+      "addNewUrlToRoute",
+      "deleteFileFromRoute",
+      "deleteUrlFromRoute",
+      "updateFileFromRoute",
+      "updateUrlFromRoute"
+    ]),
     updateRoute(e) {
-      console.log('setting local route from form element', e)
+      console.log("setting local route from form element", e);
       this.$set(this.route, e.target.id, e.target.value);
-      this.$emit('routeChanged', this.route)
+      this.$emit("routeChanged", this.route);
     },
     validate() {
       if (this.$refs.form.validate()) {
@@ -246,36 +270,19 @@ export default {
     },
     save(e) {
       // merge objects
-      const newObject = Object.assign({}, this.currentRoute, this.route)
+      const newObject = Object.assign({}, this.currentRoute, this.route);
       this.$store.dispatch("saveRoute", newObject);
-    },
-    getRoute: function (start, destination, mapRef) {
-      this.directionsService = new google.maps.DirectionsService()
-      this.directionsDisplay = new google.maps.DirectionsRenderer()
-      this.directionsDisplay.setMap(mapRef.$mapObject)
-      var vm = this
-      vm.directionsService.route({
-        origin: start, // Can be coord or also a search query
-        destination: destination,
-        travelMode: this.travelMode
-      }, function (response, status) {
-        if (status === 'OK') {
-          vm.directionsDisplay.setDirections(response) // draws the polygon to the map
-        } else {
-          console.log('Directions request failed due to ' + status)
-        }
-      })
     },
     resetForm() {
       this.key++;
       this.$refs.routeForm.reset();
-      this.date = ''
-      this.route = {}
-      console.log('resetting route form')
-      this.$emit('routeChanged', null)
+      this.date = "";
+      this.route = {};
+      console.log("resetting route form");
+      this.$emit("routeChanged", null);
     },
     reset() {
-      this.resetForm()
+      this.resetForm();
       this.$store.dispatch("removeCurrentRoute");
       this.shouldDisplay = false;
     },
@@ -283,8 +290,8 @@ export default {
       this.$refs.routeForm.resetValidation();
     },
     close() {
-      this.shouldDisplay = false
-      this.resetForm()
+      this.shouldDisplay = false;
+      this.resetForm();
     }
   }
 };

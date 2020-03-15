@@ -59,8 +59,8 @@ const PoiSchema = {
 
 
 export const actions = {
-  initPois: async function ({state, commit }) {
-    if(state.unsubscribe)
+  initPois: async function ({ state, commit }) {
+    if (state.unsubscribe)
       state.unsubscribe() // unsubscribe
 
     const ref = await this.$app.$firebase.firestore().collection('pois')
@@ -72,10 +72,10 @@ export const actions = {
     const unsubscribe = ref.onSnapshot((snapShot) => {
       snapShot.docChanges().forEach((change) => {
         console.log(`FB:${change.type}:poi`, change.doc.id)
-        if(change.type !== "removed") {
+        if (change.type !== "removed") {
           const p = change.doc.data()
           p.id = change.doc.id
-          
+
           commit('updatePoi', p)
         }
       })
@@ -128,7 +128,7 @@ export const actions = {
       title: poi.title == null ? i18n.t('marker.title', { 'length': state.pois.length }) : poi.title,
       description: poi.description == null ? i18n.t('marker.description', { 'length': state.pois.length }) : poi.description
     })
-    
+
     commit('addPoi', newPoi)
     commit("setCurrentPoi", newPoi)
   },
@@ -142,13 +142,13 @@ export const actions = {
         poi.updateCnt = 1
     }
     else {
-      poi.savedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp() 
+      poi.savedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
     }
     const user = (this.$app.$store.state.auth || {}).user
     poi.author = user.email ? user.email : ''
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
     try {
-      await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true})
+      await this.$app.$firebase.firestore().collection('pois').doc(poi.id).set({ ...poi, saved: true })
       commit('savePoi', poi)
       // TODO i18n
       commit('setMessage', { title: 'Point Saved', message: `The point ${poi.title} has been saved` })
@@ -227,9 +227,9 @@ export const mutations = {
   updatePoi(state, poi) {
     if (state.pois.findIndex(p => p.id === poi.id) > -1) {
       // update it
-     state.pois.forEach(p => {
-        if(p.id === poi.id) {
-            Object.assign(p, poi)
+      state.pois.forEach(p => {
+        if (p.id === poi.id) {
+          Object.assign(p, poi)
         }
       })
     }
