@@ -15,11 +15,14 @@ export const getters = {
   },
   getPois(state) {
     return state.pois
-  }
+  },
+  getTags(state) {
+    return state.tags
+  }  
 }
 
 export const ContentTypes = [
-  'other', 'image', 'video', 'audio'
+  'image', 'video', 'audio', 'other'
 ]
 
 export const FileSchema = {
@@ -137,7 +140,7 @@ export const actions = {
     if (!poi.savedDate) {
       poi.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
       if (poi.updateCnt != null)
-        poi.updateCnt = poi.updateCnt++
+        poi.updateCnt = poi.updateCnt+ 1
       else
         poi.updateCnt = 1
     }

@@ -2,7 +2,7 @@
   <div>
     <v-card outline>
       <v-card-title class="headline">
-        {{ contentType }} bestand {{ index + 1 }}
+        {{ fileLabel }}
       </v-card-title>
 
       <v-card-text>
@@ -22,6 +22,7 @@
           :label="$t('file.description')"
         />
         <v-select
+          v-if="!fileTypeFixed"
           v-model="localFile.type"
           dense
           :items="contentTypes"
@@ -48,7 +49,7 @@
         <v-switch
           v-if="localFile.firebaseUrl && contentType == 'image'"
           v-model="localFile.lead"
-          label="Toon deze afbeelding bij punt"
+          label="Toon deze afbeelding als eerste afbeelding (is automatisch deze als er maar 1 plaatje is)"
         />
         <a
           v-if="localFile.firebaseUrl"
@@ -104,6 +105,24 @@ export default {
         return Schema;
       }
     },
+    labelText: {
+      type: String,
+      default() {
+        return ''
+      }
+    },
+    defaultFileType: {
+      type: String,
+      default() {
+        return ''
+      }
+    },
+    fileTypeFixed: {
+      type: Boolean,
+      default() {
+        return false
+      }
+    },
     index: {
       type: Number,
       default() {
@@ -125,8 +144,17 @@ export default {
     };
   },
   computed: {
+    fileLabel() {
+      if (this.labelText)
+        return this.labelText
+        
+      return  this.contentType + ' bestand ' + (this.index + 1)
+    },
     contentType: {
       get() {
+        if(this.defaultFileType)
+          return this.defaultFileType
+
         return this.localFile.type;
       }
     },

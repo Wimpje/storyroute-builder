@@ -7,6 +7,7 @@ import Login from '@/components/auth/Login.vue'
 import Home from '@/views/Home.vue'
 import Points from '@/views/Points.vue'
 import Routes from '@/views/Routes.vue'
+import Articles from '@/views/Articles.vue'
 import Help from '@/views/Help.vue'
 
 Vue.use(Router)
@@ -39,6 +40,14 @@ const r = new Router({
       path: '/points',
       name: 'Points',
       component: Points,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/articles',
+      name: 'Articles',
+      component: Articles,
       meta: {
         requiresAuth: true
       }

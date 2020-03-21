@@ -21,7 +21,6 @@
         <template v-for="(item, index) in pois">
           <v-list-item
             :key="item.id"
-            avatar
             ripple
             @click="selectPoi(item)"
           >

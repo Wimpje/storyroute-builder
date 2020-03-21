@@ -82,11 +82,22 @@ export default {
   },
   data() {
     return {
-      type: "other",
+      
       localUrl: {}
     };
   },
   computed: {
+    type: {
+        get() {
+          return this.url.type;
+        },
+        set(value) {
+          if (this.localUrl) {
+            this.$set(this.localUrl, "type", value);
+            this.$emit("updateUrl", { index: this.index, val: this.localUrl });
+          }
+        }
+      },
     contentTypes() {
       return ContentTypes;
     },

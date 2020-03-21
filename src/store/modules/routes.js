@@ -57,7 +57,7 @@ export const actions = {
     if (route.savedDate) {
       route.updatedDate = this.$app.$firebase.firestore.FieldValue.serverTimestamp()
       if (route.updateCnt != null)
-        route.updateCnt = route.updateCnt++
+        route.updateCnt = route.updateCnt+1
       else
         route.updateCnt = 1
     }

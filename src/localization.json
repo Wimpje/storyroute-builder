@@ -5,7 +5,8 @@
     },
     "validation": {
       "someDateRequired": "Needs a date",
-      "someTextRequired": "Needs some text"
+      "someTextRequired": "Needs some text",
+      "matchDateFormat": "Date should be format: YYYY-MM-dd HH:mm"
     },
     "routes": {
       "title":"Edit routes",
@@ -27,6 +28,13 @@
       "subtitle": "Sub title",
       "travelMode": "Travel mode",
       "distance": "Distance"
+    },
+    "articles": {
+      "title": "Title",
+      "text": "Text",
+      "addEdit": "Add/edit new",
+      "date": "Publication date",
+      "category": "Category"
     },
     "marker": {
       "description": "Description - {length}",
@@ -88,7 +96,8 @@
     "validation": {
       "someDateRequired": "Datum nodig",
       "someTextRequired": "Tekst nodig",
-      "atLeastChars": "Tenminste 3 karakters"
+      "atLeastChars": "Tenminste 3 karakters",
+      "matchDateFormat": "Datum moet zijn in formaat: YYYY-MM-dd HH:mm"
     },
     "marker": {
       "description": "Beschrijving - {length}",
@@ -118,6 +127,13 @@
       "save": "Opslaan",
       "drawingMode": "Teken route modus",
       "drawRoute": "Teken route op kaart"
+    },
+    "articles": {
+      "title": "Titel",
+      "text": "Text",
+      "addEdit": "Nieuws toevoegen/bewerken",
+      "date": "Publicatedatum",
+      "category":"Categorie"
     },
     "route": {
       "title": "Titel",

@@ -7,11 +7,18 @@
 
         <v-spacer />
 
-        <v-btn icon color="warning" @click="deleteConfirmDialog = true">
+        <v-btn
+          icon
+          color="warning"
+          @click="deleteConfirmDialog = true"
+        >
           <v-icon>mdi-delete</v-icon>
         </v-btn>
 
-        <v-btn icon @click="close()">
+        <v-btn
+          icon
+          @click="close()"
+        >
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-toolbar>
@@ -47,7 +54,7 @@
             <v-combobox
               id="tags"
               v-model="tags"
-              :items="allTags"
+              :items="getTags"
               :search-input.sync="tagSearch"
               hide-selected
               :hint="$t('poi.tagsHint')"
@@ -97,7 +104,10 @@
                 @input="updateDate($event);showDatePicker = false"
               />
             </v-menu>
-            <div v-for="(url, index) in currentPoi.urls" :key="`url${index}`">
+            <div
+              v-for="(url, index) in currentPoi.urls"
+              :key="`url${index}`"
+            >
               <url-input
                 id="url"
                 class="my-4"
@@ -107,9 +117,14 @@
                 @updateUrl="updateUrlFromPoi"
               />
             </div>
-            <v-btn @click="addNewUrlToPoi">{{ urlAddLabel }}</v-btn>
+            <v-btn @click="addNewUrlToPoi">
+              {{ urlAddLabel }}
+            </v-btn>
 
-            <div v-for="(file, index) in currentPoi.files" :key="`file${index}`">
+            <div
+              v-for="(file, index) in currentPoi.files"
+              :key="`file${index}`"
+            >
               <file-input
                 :file.sync="file"
                 :index.sync="index"
@@ -118,7 +133,9 @@
                 @updateFile="updateFileFromPoi"
               />
             </div>
-            <v-btn @click="addNewFileToPoi">{{ fileAddLabel }}</v-btn>
+            <v-btn @click="addNewFileToPoi">
+              {{ fileAddLabel }}
+            </v-btn>
             <v-switch
               id="convertToVoice"
               v-model="convertToVoice"
@@ -127,21 +144,50 @@
           </v-card-text>
 
           <v-card-actions>
-            <v-btn color="primary" class="mr-4" type="submit">{{ this.$i18n.t('marker.save') }}</v-btn>
-            <v-btn class="mr-4" @click="close()">{{ this.$i18n.t('marker.cancel') }}</v-btn>
+            <v-btn
+              color="primary"
+              class="mr-4"
+              type="submit"
+            >
+              {{ this.$i18n.t('marker.save') }}
+            </v-btn>
+            <v-btn
+              class="mr-4"
+              @click="close()"
+            >
+              {{ this.$i18n.t('marker.cancel') }}
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-form>
     </v-card>
     <v-row justify="center">
-      <v-dialog v-model="deleteConfirmDialog" persistent max-width="290">
+      <v-dialog
+        v-model="deleteConfirmDialog"
+        persistent
+        max-width="290"
+      >
         <v-card>
-          <v-card-title class="headline">{{ this.$i18n.t('marker.deleteDialogTitle') }}</v-card-title>
+          <v-card-title class="headline">
+            {{ this.$i18n.t('marker.deleteDialogTitle') }}
+          </v-card-title>
           <v-card-text>{{ this.$i18n.t('marker.deleteDialogText', {title:currentPoi.title}) }}</v-card-text>
           <v-card-actions>
             <v-spacer />
-            <v-btn color="green darken-1" text @click="reset">Delete</v-btn>
-            <v-btn color="green darken-1" text @click="deleteConfirmDialog = false">Cancel</v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="reset"
+            >
+              Delete
+            </v-btn>
+            <v-btn
+              color="green darken-1"
+              text
+              @click="deleteConfirmDialog = false"
+            >
+              Cancel
+            </v-btn>
           </v-card-actions>
         </v-card>
       </v-dialog>
@@ -224,9 +270,7 @@ export default {
         return "Add another file";
       else return "Add file";
     },
-    allTags() {
-      return ["Joden", "Canadezen", "Duitsers", "Bijzonder"];
-    },
+    
     tags: {
       get() {
         if (
@@ -265,12 +309,13 @@ export default {
         this.$emit("update:display", value);
       }
     },
-    ...mapGetters(["currentPoi"]),
+    ...mapGetters(["currentPoi", "getTags"]),
     google: gmapApi
     // eslint-disable-next-line object-shorthand
   },
   created() {
     console.log("Created");
+    this.$store.dispatch('getPoiTags')
   },
   methods: {
     ...mapActions([
@@ -294,7 +339,7 @@ export default {
       this.displayDate = date;
     },
     validate() {
-      if (this.$refs.form.validate()) {
+      if (this.$refs.poiForm.validate()) {
         this.snackbar = true;
       }
     },

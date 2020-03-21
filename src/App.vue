@@ -98,6 +98,11 @@ export default {
           to: "/points"
         },
         {
+          icon: "mdi-newspaper-variant-multiple-outline",
+          title: "Articles",
+          to: "/articles"
+        },
+        {
           icon: "mdi-login",
           title: this.user ? "Log out" : "Log in",
           to: '/user'
