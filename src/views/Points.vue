@@ -73,7 +73,7 @@ export default {
   methods: {
 
     selectPoi(poi) {
-      this.$store.commit("setMapCenter", {lat: poi.position.latitude, lng: poi.position.longitude});
+      this.$store.commit("setMapCenter", poi.position);
       // TODO check does this work?
       this.$store.commit("setCurrentPoi", poi);
       this.markerEditDialog = true;
@@ -82,11 +82,11 @@ export default {
         el.scrollIntoView({behavior: 'smooth'})
       })
     },
-    markerClicked(marker) {
+    markerClicked(poi) {
       // marker or poi? make up your mind
-      this.$store.commit("setMapCenter", {lat: marker.position.latitude, lng: marker.position.longitude});
+      this.$store.commit("setMapCenter", poi.position);
       // TODO check does this work?
-      this.$store.commit("setCurrentPoi", marker);
+      this.$store.commit("setCurrentPoi", poi);
 
       this.markerEditDialog = true;
     },

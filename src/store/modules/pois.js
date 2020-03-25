@@ -163,12 +163,43 @@ export const actions = {
   saveCurrentPoi({ dispatch, state }) {
     dispatch('savePoi', state.currentPoi)
   },
+  async removeFilesFromPoi({ commit }, poi) {
+    
+    if (!poi.files || poi.files.length == 0) 
+      return
+    
+    for (let i = 0; i > poi.files.length; i++) {
+      let file = this.$firebase.storage().refFromURL(poi.files[i].firebaseUrl);
+      await file
+        .delete()
+        .then(function() {
+          console.log("file deleted");
 
-  async removeCurrentPoi({ commit, state }) {
+
+        })
+        .catch(function(error) {
+          console.log("an error occurred", error);
+          if (error.code === "storage/object-not-found") {
+            // go ahead, the image was not there
+            console.log("still removing it, file was not there");
+          } else {
+            that.$store.commit(
+              "setMessage",
+              { title: "Error", message: error, duration: 15000 },
+              { root: true }
+            );
+          }
+        });
+    }
+    poi.files = []
+    commit('updatePoi', poi)
+  },
+  async removeCurrentPoi({ commit, dispatch,  state }) {
     if (state.currentPoi === null) { return }
     const poi = state.currentPoi
     if (state.currentPoi.saved) {
-      // delete from firebase too
+      // delete from firebase too, including potentially stored files
+      dispatch('removeFilesFromPoi', state.currentPoi)
       const ref = await this.$app.$firebase.firestore().collection('pois').doc(poi.id).delete()
       console.log(ref)
     }

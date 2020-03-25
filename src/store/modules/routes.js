@@ -75,7 +75,8 @@ export const actions = {
     })
     route.pois = route.pois.map(poi => {
       const idx = rootState.pois.pois.findIndex(p => p.id == poi.id);
-      return Object.assign({}, rootState.pois.pois[idx])
+      // hack, the route has a field 'routeDescription', copy this if it exists...
+      return Object.assign({routeDescription: !!poi.routeDescription ? poi.routeDescription : '' }, rootState.pois.pois[idx])
     })
     // console.log('saving poi: (NOT REALLY, commented out in dev mode)', poi)
     await this.$app.$firebase.firestore().collection('routes').doc(route.id).set({ ...route, saved: true, savedDate: this.$app.$firebase.firestore.FieldValue.serverTimestamp() })
@@ -171,6 +172,20 @@ export const mutations = {
     }
     else
       this.$app.$store.commit('setMessage', { title: 'Error adding POI', message: `No route selected yet! Cannot add this Point` }) // TODO better implementation
+  },
+  updatePoiInRoute(state, payload) {
+    if (state.currentRoute) {
+      const idx = state.currentRoute.pois.findIndex((p) => p.id === payload.id)
+      if (idx > -1) {
+        // merging with existing poi
+        state.currentRoute.pois[idx] = Object.assign({}, state.currentRoute.pois[idx], payload)
+      }
+      else {
+        this.$app.$store.commit('setMessage', { title: 'Error modifying POI', message: `Could not find this point in route, very weird!` }) // TODO better implementation
+      }
+    }
+    else
+      this.$app.$store.commit('setMessage', { title: 'Error modifying POI', message: `No route selected yet! Cannot modify this Point` }) // TODO better implementation
   },
   removePoiFromRoute(state, payload) {
     const idx = state.currentRoute.pois.findIndex((p) => p.id === payload.id)

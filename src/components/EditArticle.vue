@@ -39,6 +39,13 @@
               required
               @input.native="updateArticle($event);"
             />
+            <v-text-field
+              id="subTitle"
+              name="subTitle"
+              :value="currentArticle.subTitle"
+              :label="$t('articles.subTitle')"
+              @input.native="updateArticle($event);"
+            />
             <v-textarea
               id="text"
               auto-grow

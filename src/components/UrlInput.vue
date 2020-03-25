@@ -2,7 +2,7 @@
   <div>
     <v-card outline>
       <v-card-title class="headline">
-        URL {{ index + 1 }} - {{ type }}
+        URL {{ index + 1 }} - {{ localUrl.type }}
       </v-card-title>
 
       <v-card-text>
@@ -27,12 +27,11 @@
         />
 
         <v-select
-          v-model="type"
+          v-model="localUrl.type"
           dense
           name="type"
           :items="contentTypes"
-          :label="$t('content.type')"
-          @change.native="update($event)"
+          @change="updateType($event)"
         />
         <v-textarea
           :id="'url' + index + 'description'"
@@ -65,6 +64,8 @@
 
 <script>
 import { Schema, ContentTypes } from "@/store/modules/pois.js";
+import { deepCopy } from '@/plugins/utils'
+
 export default {
   props: {
     url: {
@@ -82,28 +83,16 @@ export default {
   },
   data() {
     return {
-      
-      localUrl: {}
+      localUrl: deepCopy(this.url)
     };
   },
   computed: {
-    type: {
-        get() {
-          return this.url.type;
-        },
-        set(value) {
-          if (this.localUrl) {
-            this.$set(this.localUrl, "type", value);
-            this.$emit("updateUrl", { index: this.index, val: this.localUrl });
-          }
-        }
-      },
     contentTypes() {
       return ContentTypes;
     },
     icon: {
       get() {
-        switch (this.type) {
+        switch (this.localUrl.type) {
           case "audio":
             return "mdi-volume-high";
           case "video":
@@ -119,6 +108,10 @@ export default {
   methods: {
     deleteUrl() {
       this.$emit("deleteUrl", { index: this.index, url: this.url });
+    },
+    updateType() {
+      console.log('updating urltype to', this.localUrl.type)
+      this.$emit("updateUrl", { index: this.index, val: this.localUrl });
     },
     update: function(e) {
       console.log(

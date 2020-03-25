@@ -58,12 +58,13 @@
           v-if="currentRoute && drawingRoute"
           :show-save-button="pathEdited"
           @save="save"
+          @removePath="removePath"
         />
         <RouteOrder
           v-if="currentRoute && !drawingRoute"
-          :pois="pois"
-          :show-save-button="showPoiSaveButton"
+          :show-poi-save-button="showPoiSaveButton"
           @save="save"
+          @contentChanged="routeChanged"
         />
       </v-col>
     </v-row>
@@ -108,7 +109,6 @@ export default {
       isDragging: false,
       pathEdited: false,
       delayedDragging: false,
-      showPoiSaveButton: false,
       saved: this.currentRoute ? (typeof this.currentRoute.saved === 'undefined' ? false : this.currentRoute.saved) : false
     }
   },
@@ -117,6 +117,10 @@ export default {
       routes: "getRoutes",
       currentRoute: "currentRoute"
     }),
+    showPoiSaveButton() {
+      console.log('should showPoiSavebutton')
+      return !this.saved
+    },
     currentPath() {
       if (this.drawingRoute) {
         if (this.currentRoute.path.length) {
@@ -136,22 +140,7 @@ export default {
       }
       return []
     },
-    pois: {
-      get() {
-          let ret = []
-          if (this.$store.state.routes.currentRoute && this.$store.state.routes.currentRoute.pois && this.$store.state.routes.currentRoute.pois.length)
-            ret =  this.$store.state.routes.currentRoute.pois
-          else 
-            ret = []
-          console.log('routes.vue pois getter: ', ret)
-          return ret
-      },
-      set(value) {
-        this.showPoiSaveButton = true
-        this.saved = false
-        this.$store.commit('updateCurrentRoutePois', value)
-      }
-    },
+    
     currentRouteId: {
         get() {
           console.log('currentRouteId changed', this.currentRoute)
@@ -173,7 +162,6 @@ export default {
     },
     currentRoute: function() {
       console.log("currentRouteChanged")
-      this.showPoiSaveButton = false
       this.pathEdited = false
       
       if (this.currentRoute) {
@@ -201,8 +189,18 @@ export default {
     this.$store.commit('setCurrentPoiToNone')
   },
   methods: {
+    removePath() {
+      // thjis is a bit funky, since path is a computed value, modifiying the store will update the path
+
+      // create a path from all the points, then store it
+       const pathFromPoints =  this.currentRoute.pois.map(poi => {
+        return new this.$firebase.firestore.GeoPoint(poi.position.latitude, poi.position.longitude)
+      })
+      this.$store.commit('setPathToCurrentRoute',  pathFromPoints)
+    },
     routeChanged: function(updatedRoute) {
       // emitted from form, set save to false
+      console.log('route changed, setting saved to false')
       this.saved = false
     },
     //...mapActions(['createRoute']),
@@ -233,11 +231,10 @@ export default {
         this.showRoutes = true;
    
       // marker or poi? make up your mind
-      this.$store.commit("setMapCenter", {lat: poi.position.latitude, lng: poi.position.longitude});
+      this.$store.commit("setMapCenter", poi.position);
       // this.$store.commit("setCurrentPoi", poi);
 
       this.$store.commit('addPoiToRoute', poi)
-      this.showPoiSaveButton = true
       this.saved = false
     },
     mapClicked(args) {
@@ -252,7 +249,6 @@ export default {
     save() {
       const updatedRoute = Object.assign( {}, this.currentRoute)
       this.$store.dispatch("saveRoute", updatedRoute);
-      this.showPoiSaveButton = false
       this.pathEdited = false
       this.saved = true
     },
@@ -271,9 +267,7 @@ export default {
       const pathToPointsArray = path.map(p => new this.$firebase.firestore.GeoPoint(p.lat(), p.lng()))
       this.$store.commit('setPathToCurrentRoute', pathToPointsArray)
     },
-    removePoiFromRoute(poi) {
-      this.$store.commit('removePoiFromRoute', poi)
-    },
+
     setCurrentRouteToNone() {
       this.$store.commit('setCurrentRouteToNone')
     }

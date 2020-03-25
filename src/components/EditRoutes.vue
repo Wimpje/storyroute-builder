@@ -56,7 +56,7 @@
               :label="$t('route.distance')"
               @input.native="updateRoute($event);"
             />
-            
+
             <v-textarea
               id="description"
               auto-grow
@@ -201,20 +201,24 @@ export default {
       deleteConfirmDialog: false,
       directionsService: {},
       directionsDisplay: {},
-      travelModes: ["BICYCLING", "DRIVING", "WALKING"],
-      travelMode: "BICYCLING"
+      travelModes: ["BICYCLING", "DRIVING", "WALKING"]
     };
   },
   watch: {
     currentRoute: function(newVal, oldVal) {
       if (newVal.id !== oldVal.id) this.resetForm();
-    },
-    travelMode: function(newVal, oldVal) {
-      this.$set(this.route, 'travelMode', newVal);
-      this.$emit("routeChanged", this.route);
     }
   },
   computed: {
+    travelMode: {
+      get() {
+        return this.route.travelMode;
+      },
+      set(value) {
+        this.$set(this.route, "travelMode", value);
+        this.$emit("routeChanged", this.route);
+      }
+    },
     urlAddLabel() {
       if (this.currentRoute.urls && this.currentRoute.urls.length > 0)
         return "Add another url";
@@ -248,7 +252,6 @@ export default {
     ...mapGetters(["currentRoute"]),
     google: gmapApi
   },
-  created() {},
   methods: {
     ...mapActions([
       "addNewFileToRoute",

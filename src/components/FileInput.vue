@@ -96,6 +96,7 @@
 
 <script>
 import { Schema, ContentTypes } from "@/store/modules/pois.js";
+import { deepCopy } from '@/plugins/utils'
 
 export default {
   props: {
@@ -139,7 +140,7 @@ export default {
       uploadEnd: false,
       firebaseUrl: "",
       // copy of file to be able to 'v-model' it. On save pass it back with emit
-      localFile: Object.assign({}, this.file),
+      localFile: deepCopy(this.file),
       deleting: false
     };
   },
@@ -155,7 +156,7 @@ export default {
         if(this.defaultFileType)
           return this.defaultFileType
 
-        return this.localFile.type;
+        return this.localFile.type || this.contentTypes[0];
       }
     },
     value() {
@@ -275,7 +276,7 @@ export default {
         const storageRef = this.$firebase
           .storage()
           .ref(
-            this.contentType + "/" + Math.random() + "_" + this.localFile.title
+            this.contentType + "/" + Date.now() + "_" + this.localFile.fileName
           );
         this.uploadTask = storageRef.put(files[0]);
       }

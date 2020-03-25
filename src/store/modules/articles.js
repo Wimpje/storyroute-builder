@@ -6,6 +6,7 @@ import { UrlSchema, FileSchema, ContentTypes } from "@/store/modules/pois.js";
 export const Schema = {
   id: '',
   title: '',
+  subTitle: '',
   text: '',
   date: '',
   publishedDate: '', // YYYY-MM-dd HH:mm
