@@ -43,20 +43,31 @@
             <v-text-field
               id="subtitle"
               name="subtitle"
+              
               :value="currentRoute.subtitle"
               :rules="someText"
               :label="$t('route.subtitle')"
-              required
               @input.native="updateRoute($event);"
             />
-            <v-text-field
-              id="distance"
-              name="distance"
-              :value="currentRoute.distance"
-              :label="$t('route.distance')"
-              @input.native="updateRoute($event);"
-            />
-
+            <v-card
+              class="d-flex flex-row"
+     
+              flat
+              tile
+            >
+              <v-text-field
+                id="distance"
+                v-model="distance"
+                right
+                name="distance"
+                :label="$t('route.distance')"
+              />
+              <v-btn
+                @click="calculateDistanceOfLine()"
+              >
+                {{ this.$i18n.t('route.calculateDistance') }}
+              </v-btn>
+            </v-card>
             <v-textarea
               id="description"
               auto-grow
@@ -212,10 +223,19 @@ export default {
   computed: {
     travelMode: {
       get() {
-        return this.route.travelMode;
+        return this.route.travelMode ? this.route.travelMode : this.currentRoute.travelMode;
       },
       set(value) {
         this.$set(this.route, "travelMode", value);
+        this.$emit("routeChanged", this.route);
+      }
+    },
+    distance: {
+      get() {
+        return this.route.distance ? this.route.distance : this.currentRoute.distance;
+      },
+      set(value) {
+        this.$set(this.route, "distance", value);
         this.$emit("routeChanged", this.route);
       }
     },
@@ -261,6 +281,14 @@ export default {
       "updateFileFromRoute",
       "updateUrlFromRoute"
     ]),
+    calculateDistanceOfLine() {
+      if(this.currentRoute.path) {
+        const latLngArray = this.currentRoute.path.map(p => new google.maps.LatLng(p.latitude, p.longitude))
+        const dist = Math.round((google.maps.geometry.spherical.computeLength(latLngArray) / 1000) * 100) / 100
+        console.log("DISTANCE!", dist)
+        this.distance = dist
+      }
+    },
     updateRoute(e) {
       console.log("setting local route from form element", e);
       this.$set(this.route, e.target.id, e.target.value);

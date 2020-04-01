@@ -3,6 +3,8 @@ import i18n from '@/plugins/i18n';
 import { deepCopy } from '@/plugins/utils'
 import { UrlSchema, FileSchema, ContentTypes } from "@/store/modules/pois.js";
 
+export const Categories = ["news", "story", "event", "credits", "help", "contact", "urgent", "specialoffer"]
+
 export const Schema = {
   id: '',
   title: '',
@@ -13,6 +15,7 @@ export const Schema = {
   eventDateStart: '', // YYYY-MM-dd HH:mm
   eventDateStop: '', // YYYY-MM-dd HH:mm
   author: '', // name of creator
+  category: '', // one of categories
   convertToVoice: false, // read aloud with google voice 
   tags: [], // array of strings
   files: [],
@@ -193,6 +196,7 @@ export const mutations = {
 export default {
   state,
   Schema,
+  Categories,
   getters,
   actions,
   mutations

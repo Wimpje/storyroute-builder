@@ -17,7 +17,8 @@
       "distance": "Route distance (KM)",
       "save": "Save",
       "drawingMode": "Draw route mode",
-      "drawRoute": "Draw route on map"
+      "drawRoute": "Draw route on map",
+      "calculateDistance": "calculate distance"
     },
     "route": {
       "title": "Title",
@@ -144,7 +145,8 @@
       "subtitle": "Sub titel",
       "travelMode": "Vervoersmethode",
       "distance": "Afstand",
-      "routeDescription": "Route-specifieke beschrijving"
+      "routeDescription": "Route-specifieke beschrijving",
+      "calculateDistance": "Bereken afstand"
     },
     "poi": {
       "title": "Titel",

@@ -187,6 +187,9 @@
 
 <script>
 import { mapGetters, mapActions } from "vuex";
+import { Categories } from "@/store/modules/articles.js";
+
+
 import FileInput from "@/components/FileInput.vue";
 import UrlInput from "@/components/UrlInput.vue";
 
@@ -269,7 +272,7 @@ export default {
           (v && /^\d{4}\-\d{2}\-\d{2}\s\d{2}:\d{2}$/.test(v)) ||
           this.$i18n.t("validation.matchDateFormat")
       ],
-      categories: ["news", "story", "help", "event", "contact", "urgent", "specialoffer"],
+      categories: Categories,
       lazy: true,
       article: {},
       saved: true,

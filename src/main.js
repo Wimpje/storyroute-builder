@@ -17,7 +17,7 @@ Vue.$cookies.config('1h')
 Vue.use(VueGoogleMaps, {
   load: {
     key: process.env.VUE_APP_GOOGLE_MAPS_API_KEY,
-    libraries: 'places',
+    libraries: ['places', 'geometry'],
     region: 'NL',
     language: 'nl'
   },
