@@ -32,6 +32,10 @@
           ref="mapRef"
           :center="center"
           :zoom="zoom"
+          :options="{
+  fullscreenControl: false,
+  streetViewControl: false
+          }"  
           @click="mapClick"
         >
           <gmap-polyline

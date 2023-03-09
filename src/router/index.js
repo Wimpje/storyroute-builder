@@ -6,6 +6,7 @@ import i18n from '@/plugins/i18n';
 import Login from '@/components/auth/Login.vue'
 import Home from '@/views/Home.vue'
 import Points from '@/views/Points.vue'
+import Config from '@/views/Config.vue'
 import Routes from '@/views/Routes.vue'
 import Articles from '@/views/Articles.vue'
 import Help from '@/views/Help.vue'
@@ -48,6 +49,14 @@ const r = new Router({
       path: '/articles',
       name: 'Articles',
       component: Articles,
+      meta: {
+        requiresAuth: true
+      }
+    },
+    {
+      path: '/config',
+      name: 'Config',
+      component: Config,
       meta: {
         requiresAuth: true
       }

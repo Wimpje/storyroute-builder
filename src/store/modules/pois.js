@@ -32,7 +32,7 @@ export const FileSchema = {
   date: '',
   copyright: '',
   firebaseUrl: '',
-  type: 'other', // one of ContentTypes
+  type: 'image', // one of ContentTypes
   lead: false // use by default if set
 }
 

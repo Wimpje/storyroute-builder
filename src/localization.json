@@ -28,7 +28,8 @@
       "deleteDialogTitle": "Verwijder route",
       "subtitle": "Sub title",
       "travelMode": "Travel mode",
-      "distance": "Distance"
+      "distance": "Distance",
+      "visible": "Visible in app"
     },
     "articles": {
       "title": "Title",
@@ -127,7 +128,8 @@
       "order": "Sleep in de juiste volgorde",
       "save": "Opslaan",
       "drawingMode": "Teken route modus",
-      "drawRoute": "Teken route op kaart"
+      "drawRoute": "Teken route op kaart",
+      "visible": "Zichtbaar in app"
     },
     "articles": {
       "title": "Titel",

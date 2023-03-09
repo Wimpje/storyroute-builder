@@ -11,9 +11,9 @@ const admin = require('firebase-admin');
 
 admin.initializeApp({
   credential: admin.credential.applicationDefault(),
-  databaseURL: 'https://wims-test-2c2e4.firebaseio.com'
+  databaseURL: 'https://jaarbevrijdingommenapp.firebaseio.com'
 });
-/*
+
 exports.setCustomClaims = functions.auth.user().onCreate(user => {
   let promise = Promise.resolve();
   if (emails.has(user.email)) {
@@ -25,8 +25,8 @@ exports.setCustomClaims = functions.auth.user().onCreate(user => {
 
   return promise;
 });
-*/
 
+/*
 const routesRef = admin.firestore().collection('routes');
 
 exports.UpdateRouteWithPoiChange = functions.firestore.document('pois/{ID}').onUpdate((change, context) => {
@@ -35,7 +35,7 @@ exports.UpdateRouteWithPoiChange = functions.firestore.document('pois/{ID}').onU
 })
 
 
-/*
+
 exports.Google_T2S = functions.firestore.document('pois/{ID}').onUpdate((change, context) => {
 
   // if shouldn't convert, don't convert...

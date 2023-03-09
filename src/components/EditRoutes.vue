@@ -3,7 +3,7 @@
   <div>
     <v-card flat>
       <v-toolbar dense>
-        <v-toolbar-title>{{ this.$i18n.t('routes.addEdit') }}</v-toolbar-title>
+        <v-toolbar-title>{{ title }}</v-toolbar-title>
 
         <v-spacer />
 
@@ -39,6 +39,11 @@
               :label="$t('route.title')"
               required
               @input.native="updateRoute($event);"
+            />
+            <v-switch
+              id="visible"
+              v-model="visible"
+              :label="$t('routes.visible')"
             />
             <v-text-field
               id="subtitle"
@@ -201,7 +206,7 @@ export default {
     return {
       key: 1,
       valid: true,
-      title: "",
+      title: this.$i18n.t('routes.addEdit'),
       someText: [
         v => !!v || this.$i18n.t("validation.someTextRequired"),
         v => (v && v.length > 1) || this.$i18n.t("validation.atLeastChars", 1)
@@ -218,9 +223,11 @@ export default {
   watch: {
     currentRoute: function(newVal, oldVal) {
       if (newVal.id !== oldVal.id) this.resetForm();
+      this.title = this.$i18n.t('routes.addEdit') + (newVal.visible ? ' - ZICHTBAAR IN APP' : ' - ONZICHTBAAR IN APP')
     }
   },
   computed: {
+    
     travelMode: {
       get() {
         return this.route.travelMode ? this.route.travelMode : this.currentRoute.travelMode;
@@ -248,6 +255,19 @@ export default {
       if (this.currentRoute.files && this.currentRoute.files.length > 0)
         return "Add another file";
       else return "Add file";
+    },
+    visible: {
+      get() {
+        return this.currentRoute.visible;
+      },
+      set(value) {
+        if (this.route) {
+          if (typeof value !== "undefined") {
+            this.$set(this.route, "visible", value);
+            this.title = this.$i18n.t('routes.addEdit') + (this.route.visible ? ' - ZICHTBAAR IN APP' : ' - ONZICHTBAAR IN APP')
+          }
+        }
+      }
     },
     convertToVoice: {
       get() {
